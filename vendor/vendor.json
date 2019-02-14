@@ -1,0 +1,11 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"path": "mux",
+			"revision": ""
+		}
+	],
+	"rootPath": "github.com/PierreBougon/Bym-BackEnd"
+}
