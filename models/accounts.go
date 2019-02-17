@@ -1,12 +1,14 @@
 package models
 
 import (
-	u "Bym-BackEnd/utils"
+	u "github.com/PierreBougon/Bym-BackEnd/utils"
+
+	"os"
+	"strings"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
-	"os"
-	"strings"
 )
 
 /*

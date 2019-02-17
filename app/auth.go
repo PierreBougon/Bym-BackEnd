@@ -1,13 +1,15 @@
 package app
 
 import (
-	"Bym-BackEnd/models"
-	u "Bym-BackEnd/utils"
+	"github.com/PierreBougon/Bym-BackEnd/models"
+	u "github.com/PierreBougon/Bym-BackEnd/utils"
+
 	"context"
-	"github.com/dgrijalva/jwt-go"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 var JwtAuthentication = func(next http.Handler) http.Handler {
