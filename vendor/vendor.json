@@ -69,5 +69,8 @@
 			"revisionTime": "2019-02-10T12:59:10Z"
 		}
 	],
-	"rootPath": "github.com/PierreBougon/Bym-BackEnd"
+	"rootPath": "github.com/PierreBougon/Bym-BackEnd",
+	"heroku": {
+		"install" : [ "./..." ]
+	}
 }
