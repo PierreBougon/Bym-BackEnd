@@ -71,6 +71,7 @@
 	],
 	"rootPath": "github.com/PierreBougon/Bym-BackEnd",
 	"heroku": {
-		"install" : [ "./..." ]
+		"install" : [ "./..." ],
+		"goVersion": "go1.11"
 	}
 }
