@@ -1,8 +1,10 @@
 package models
 
 import (
-	u "Bym-BackEnd/utils"
+	u "github.com/PierreBougon/Bym-BackEnd/utils"
+
 	"fmt"
+
 	"github.com/jinzhu/gorm"
 )
 

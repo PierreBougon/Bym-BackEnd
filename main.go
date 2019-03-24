@@ -1,12 +1,14 @@
 package main
 
 import (
-	"Bym-BackEnd/app"
-	"Bym-BackEnd/controllers"
+	"github.com/PierreBougon/Bym-BackEnd/app"
+	"github.com/PierreBougon/Bym-BackEnd/controllers"
+
 	"fmt"
-	"github.com/gorilla/mux"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
