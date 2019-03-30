@@ -27,7 +27,7 @@ var CreatePlaylist = func(w http.ResponseWriter, r *http.Request) {
 var GetPlaylists = func(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value("user").(uint)
 
-	data := models.GetPlaylists(uint(user))
+	data := models.GetPlaylistByUser(uint(user))
 	resp := u.Message(true, "success")
 	resp["playlists"] = data
 	u.Respond(w, resp)
@@ -44,7 +44,7 @@ var GetPlaylist = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.GetPlaylist(uint(id))
+	data := models.GetPlaylistById(uint(id))
 	resp := u.Message(true, "success")
 	resp["playlist"] = data
 	u.Respond(w, resp)

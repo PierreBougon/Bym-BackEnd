@@ -35,7 +35,7 @@ func getDbInfoFromEnv() (dbDialect string, dbUri string) {
 		// creds["port"] = submatches[5]
 		creds["database"] = submatches[6]
 	} else {
-		e := godotenv.Load() //Load .env file
+		e := godotenv.Load("../.env") //Load .env file
 		if e != nil {
 			fmt.Print(e)
 		}
@@ -51,7 +51,6 @@ func getDbInfoFromEnv() (dbDialect string, dbUri string) {
 	dbUri = fmt.Sprintf(
 		"host=%s user=%s dbname=%s password=%s sslmode=require",
 		creds["host"], creds["user"], creds["database"], creds["pass"]) //Build connection string
-	fmt.Println(dbDialect, dbUri)
 	return
 }
 

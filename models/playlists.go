@@ -43,7 +43,7 @@ func (playlist *Playlist) Create(user uint) map[string]interface{} {
 	return response
 }
 
-func GetPlaylist(u uint) *Playlist {
+func GetPlaylistById(u uint) *Playlist {
 	playlist := &Playlist{}
 	GetDB().Table("playlists").Where("id = ?", u).First(playlist)
 	if playlist.Name == "" {
@@ -52,7 +52,7 @@ func GetPlaylist(u uint) *Playlist {
 	return playlist
 }
 
-func GetPlaylists(user uint) []*Playlist {
+func GetPlaylistByUser(user uint) []*Playlist {
 
 	playlists := make([]*Playlist, 0)
 	err := GetDB().Table("playlists").Where("user_id = ?", user).Find(&playlists).Error

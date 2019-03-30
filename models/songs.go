@@ -32,6 +32,7 @@ func (song *Song) Validate() (map[string]interface{}, bool) {
 func (song *Song) Create() map[string]interface{} {
 
 	if resp, ok := song.Validate(); !ok {
+		// fmt.Println(resp, ok)
 		return resp
 	}
 
