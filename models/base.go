@@ -32,7 +32,7 @@ func getDbInfoFromEnv() (dbLang string, dbUri string) {
 			fmt.Print(e)
 		}
 
-		dbLang := os.Getenv("db_dialect")
+		dbLang = os.Getenv("db_dialect")
 		username := os.Getenv("db_user")
 		password := os.Getenv("db_pass")
 		dbName := os.Getenv("db_name")
