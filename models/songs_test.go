@@ -25,34 +25,36 @@ var _ = Describe("Songs", func() {
 		}
 	})
 
-	Describe("Validating Song info", func() {
-		AssertFailedValidationBehavior := func(s models.Song) {
-			It("should be invalid", func() {
-				_, state := s.Validate()
-				Expect(state).To(BeFalse())
-			})
-		}
-
+	Describe("Validating Song data", func() {
 		Context("With an empty name", func() {
-			song.Name = ""
-			AssertFailedValidationBehavior(song)
+			wrongName := models.Song{
+				Name: invalidSong.Name,
+				PlaylistId: song.PlaylistId,
+				ExternalId: song.ExternalId,
+			}
+			AssertValidationBehavior(&wrongName, false)
 		})
 
-		Context("With a songId equal to 0", func() {
-			song.PlaylistId = 0
-			AssertFailedValidationBehavior(song)
+		Context("With a playlistId equal to 0", func() {
+			wrongId := models.Song{
+				Name: song.Name,
+				PlaylistId: invalidSong.PlaylistId,
+				ExternalId: song.ExternalId,
+			}
+			AssertValidationBehavior(&wrongId, false)
 		})
 
 		Context("With an empty externalId", func() {
-			song.ExternalId = ""
-			AssertFailedValidationBehavior(song)
+			wrongExternal := models.Song{
+				Name: song.Name,
+				PlaylistId: song.PlaylistId,
+				ExternalId: invalidSong.ExternalId,
+			}
+			AssertValidationBehavior(&wrongExternal, false)
 		})
 
 		Context("With correct data", func() {
-			It("should be valid", func() {
-				_, state := song.Validate()
-				Expect(state).To(BeTrue())
-			})
+			AssertValidationBehavior(&song, true)
 		})
 	})
 
@@ -85,7 +87,10 @@ var _ = Describe("Songs", func() {
 	Describe("Fetching all songs from a playlist", func() {
 		Context("With a playlist ID", func() {
 			It("should return a list", func() {
-				songs := models.GetSongs(1)
+				var s interface{} = models.GetSongs(1)
+				songs, ok := s.([]*models.Song)
+
+				Expect(ok).To(BeTrue())
 				Expect(songs).ToNot(BeNil())
 			})
 		})

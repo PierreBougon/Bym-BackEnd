@@ -26,57 +26,34 @@ var _ = Describe("Playlists", func() {
 		}
 	})
 
-	Describe("Validating Playlist info", func() {
-		AssertFailedValidationBehavior := func(p models.Playlist) {
-			It("should be invalid", func() {
-				_, state := p.Validate()
-				Expect(state).To(BeFalse())
-			})
-		}
-
+	Describe("Validating Playlist data", func() {
 		Context("With an name shorter than 3 characters", func() {
-			playlist.Name = "12"
-			AssertFailedValidationBehavior(playlist)
+			wrongName := models.Playlist{
+				Name: invalidPlaylist.Name,
+				UserId: playlist.UserId,
+				Songs: playlist.Songs,
+			}
+			AssertValidationBehavior(&wrongName, false)
 		})
 
 		Context("With an userId lesser than 1", func() {
-			playlist.UserId = 0
-			AssertFailedValidationBehavior(playlist)
+			wrongUser := models.Playlist{
+				Name: playlist.Name,
+				UserId: invalidPlaylist.UserId,
+				Songs: playlist.Songs,
+			}
+			AssertValidationBehavior(&wrongUser, false)
 		})
 
 		Context("With correct data", func() {
-			It("should be valid", func() {
-				_, state := playlist.Validate()
-				Expect(state).To(BeTrue())
-			})
+			AssertValidationBehavior(&playlist, true)
 		})
 	})
 
 	Describe("Creating a Playlist", func() {
-		created := false
-		mockUser := &models.Account{}
-
-		BeforeEach(func() {
-			mockUser = models.GetUser(1)
-			if mockUser == nil {
-				mockUser = &models.Account{
-					Email: "test@gmail.com",
-					Password: "123456",
-				}
-				mockUser.Create()
-				created = true
-			}
-		})
-
-		AfterEach(func() {
-			if created {
-				models.GetDB().Delete(mockUser)
-			}
-		})
-
 		Context("With invalid data", func() {
 			It("should fail", func() {
-				resp := invalidPlaylist.Create(mockUser.ID)
+				resp := invalidPlaylist.Create(mockAccount.ID)
 				Expect(resp["status"]).To(BeFalse())
 			})
 
@@ -84,28 +61,47 @@ var _ = Describe("Playlists", func() {
 
 		Context("With valid data", func() {
 			It("should attribute an id and return the playlist", func() {
-				resp := playlist.Create(mockUser.ID)
+				resp := playlist.Create(mockAccount.ID)
 
 				Expect(resp["status"]).To(BeTrue())
 				Expect(resp["playlist"]).NotTo(BeNil())
 				Expect(playlist.ID).To(BeNumerically(">", 0))
 			})
+		})
 
-			AfterEach(func() {
-				if playlist.ID > 0 {
-					db := models.GetDB()
-					db.Delete(&playlist)
-				}
+		AfterEach(func() {
+			if playlist.ID > 0 {
+				db := models.GetDB()
+				db.Delete(&playlist)
+			}
+		})
+	})
+
+	Describe("Fetching a playlist", func() {
+		Context("With a wrong playlist ID", func() {
+			It("should return nothing", func() {
+				playlist := models.GetPlaylistById(0)
+				Expect(playlist).To(BeNil())
+			})
+		})
+
+		Context("With a valid playlist ID", func() {
+			It("should return a playlist", func() {
+				playlist := models.GetPlaylistById(0)
+				Expect(playlist).To(BeNil())
 			})
 		})
 	})
-/*
-	Describe("Fetching all playlists from a playlist", func() {
-		Context("With a playlist ID", func() {
+
+	Describe("Fetching all playlists from a user", func() {
+		Context("With a correct ID", func() {
 			It("should return a list", func() {
-				playlists := models.GetPlaylists(1)
+				var s interface{} = models.GetPlaylistByUser(1)
+				playlists, ok := s.([]*models.Playlist)
+
+				Expect(ok).To(BeTrue())
 				Expect(playlists).ToNot(BeNil())
 			})
 		})
-	})*/
+	})
 })
