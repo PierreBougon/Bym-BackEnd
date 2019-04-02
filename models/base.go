@@ -18,6 +18,8 @@ func migrate() {
 		&Song{},
 	)
 	db.Model(&Account{}).RemoveIndex("token")
+	db.Model(&Song{}).AddForeignKey("playlist_id", "playlists(id)", "CASCADE", "RESTRICT")
+	db.Model(&Playlist{}).AddForeignKey("user_id", "accounts(id)", "CASCADE", "RESTRICT")
 }
 
 func getDbInfoFromEnv() (dbDialect string, dbUri string) {

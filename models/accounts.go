@@ -23,10 +23,10 @@ type Token struct {
 //a struct to rep user account
 type Account struct {
 	gorm.Model
-	Email        string `json:"email"`
-	Password     string `json:"password"`
-	TokenVersion uint   `json:"token_version"`
-	Playlists    []Playlist
+	Email        string     `json:"email"`
+	Password     string     `json:"password"`
+	TokenVersion uint       `json:"token_version"`
+	Playlists    []Playlist `gorm:"ForeignKey:UserId"`
 }
 
 func (account *Account) ValidatePassword() (map[string]interface{}, bool) {
