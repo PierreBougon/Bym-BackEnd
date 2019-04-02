@@ -31,6 +31,10 @@ func (song *Song) Validate() (map[string]interface{}, bool) {
 
 func (song *Song) Create() map[string]interface{} {
 
+	err := db.First(&Playlist{}, song.PlaylistId)
+	if err != nil {
+		return u.Message(false, "Failed to create song, Playlist does not exist")
+	}
 	if resp, ok := song.Validate(); !ok {
 		return resp
 	}

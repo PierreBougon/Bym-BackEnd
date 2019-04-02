@@ -26,6 +26,7 @@ func main() {
 	// Auth
 	router.HandleFunc("/api/user/new", controllers.CreateAccount).Methods("POST")
 	router.HandleFunc("/api/user/login", controllers.Authenticate).Methods("POST")
+	router.HandleFunc("/api/user/update_password", controllers.UpdatePassword).Methods("PATCH")
 
 	// Playlist
 	router.HandleFunc("/api/playlist", controllers.CreatePlaylist).Methods("POST")

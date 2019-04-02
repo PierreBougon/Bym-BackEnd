@@ -19,6 +19,9 @@ var CreateSong = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := song.Create()
+	if resp["status"] == false {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 	u.Respond(w, resp)
 }
 
