@@ -16,12 +16,17 @@ type Song struct {
 	// We can add image + infos etc
 }
 
-func (song *Song) Validate() (map[string]interface{}, bool) {
+func (song *Song) Validate(user uint) (map[string]interface{}, bool) {
 	if len(song.Name) < 1 {
 		return u.Message(false, "Song name must be at least 1 characters long"), false
 	}
 	if song.PlaylistId == 0 {
 		return u.Message(false, "Invalid playlist"), false
+	}
+	playlist := &Playlist{}
+	err := db.First(playlist, song.PlaylistId).Error
+	if err != nil || playlist.UserId != user {
+		return u.Message(false, "Invalid song, you may not own this playlist or playlist doesn't exist"), false
 	}
 	if song.ExternalId == "" {
 		return u.Message(false, "Invalid external id"), false
@@ -29,13 +34,9 @@ func (song *Song) Validate() (map[string]interface{}, bool) {
 	return u.Message(false, "Requirement passed"), true
 }
 
-func (song *Song) Create() map[string]interface{} {
+func (song *Song) Create(user uint) map[string]interface{} {
 
-	err := db.First(&Playlist{}, song.PlaylistId)
-	if err != nil {
-		return u.Message(false, "Failed to create song, Playlist does not exist")
-	}
-	if resp, ok := song.Validate(); !ok {
+	if resp, ok := song.Validate(user); !ok {
 		return resp
 	}
 
@@ -68,7 +69,7 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]i
 	playlist := &Playlist{}
 	db.First(playlist, retSong.PlaylistId)
 	if err != nil || playlist.UserId != user {
-		return u.Message(false, "Invalid song, you may not own this song")
+		return u.Message(false, "Invalid song, you may not own this playlist")
 	}
 	//if (retSong.PlaylistId) TODO : very ownership
 	retSong.Name = newSong.Name
@@ -82,7 +83,7 @@ func (song *Song) DeleteSong(user uint, songId uint) map[string]interface{} {
 	playlist := &Playlist{}
 	db.First(playlist, retSong.PlaylistId)
 	if err != nil || playlist.UserId != user {
-		return u.Message(false, "Invalid song, you may not own this song")
+		return u.Message(false, "Invalid song, you may not own this playlist")
 	}
 	db.Delete(&retSong)
 	return u.Message(true, "Song successfully deleted")
