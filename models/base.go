@@ -17,6 +17,7 @@ func migrate() {
 		&Playlist{},
 		&Song{},
 	)
+	db.Model(&Account{}).RemoveIndex("token")
 }
 
 func getDbInfoFromEnv() (dbDialect string, dbUri string) {
