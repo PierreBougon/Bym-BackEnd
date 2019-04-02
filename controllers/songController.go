@@ -11,6 +11,7 @@ import (
 )
 
 var CreateSong = func(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value("user").(uint)
 	var song = &models.Song{}
 	err := json.NewDecoder(r.Body).Decode(song) //decode the request body into struct and failed if any error occur
 	if err != nil {
@@ -18,7 +19,7 @@ var CreateSong = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := song.Create()
+	resp := song.Create(user)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
 	}

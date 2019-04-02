@@ -11,7 +11,7 @@ type Playlist struct {
 	gorm.Model
 	Name   string `json:"name"`
 	UserId uint   `json:"user_id"`
-	Songs  []Song
+	Songs  []Song `gorm:"ForeignKey:PlaylistId"`
 }
 
 func (playlist *Playlist) Validate() (map[string]interface{}, bool) {
