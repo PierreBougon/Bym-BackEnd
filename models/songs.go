@@ -57,3 +57,29 @@ func GetSongs(playlist uint) []*Song {
 
 	return songs
 }
+
+func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]interface{} {
+	retSong := &Song{}
+	err := db.First(&retSong, songId).Error
+	playlist := &Playlist{}
+	db.First(playlist, retSong.PlaylistId)
+	if err != nil || playlist.UserId != user {
+		return u.Message(false, "Invalid song, you may not own this song")
+	}
+	//if (retSong.PlaylistId) TODO : very ownership
+	retSong.Name = newSong.Name
+	db.Save(&retSong)
+	return u.Message(true, "Song successfully updated")
+}
+
+func (song *Song) DeleteSong(user uint, songId uint) map[string]interface{} {
+	retSong := &Song{}
+	err := db.First(&retSong, songId).Error
+	playlist := &Playlist{}
+	db.First(playlist, retSong.PlaylistId)
+	if err != nil || playlist.UserId != user {
+		return u.Message(false, "Invalid song, you may not own this song")
+	}
+	db.Delete(&retSong)
+	return u.Message(true, "Song successfully deleted")
+}

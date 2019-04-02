@@ -31,10 +31,14 @@ func main() {
 	router.HandleFunc("/api/playlist", controllers.CreatePlaylist).Methods("POST")
 	router.HandleFunc("/api/playlist", controllers.GetPlaylists).Methods("GET")
 	router.HandleFunc("/api/playlist/{id}", controllers.GetPlaylist).Methods("GET")
+	router.HandleFunc("/api/playlist/{id}", controllers.UpdatePlaylist).Methods("PUT")
+	router.HandleFunc("/api/playlist/{id}", controllers.DeletePlaylist).Methods("DELETE")
 
 	// Songs
 	router.HandleFunc("/api/song", controllers.CreateSong).Methods("POST")
 	router.HandleFunc("/api/song", controllers.GetSongs).Methods("GET")
+	router.HandleFunc("/api/song/{id}", controllers.UpdateSong).Methods("PUT")
+	router.HandleFunc("/api/song/{id}", controllers.DeleteSong).Methods("DELETE")
 
 	router.Use(app.JwtAuthentication)
 

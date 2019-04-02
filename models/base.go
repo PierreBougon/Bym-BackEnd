@@ -16,7 +16,7 @@ func migrate() {
 		&Account{},
 		&Playlist{},
 		&Song{},
-		)
+	)
 }
 
 func getDbInfoFromEnv() (dbDialect string, dbUri string) {
@@ -24,7 +24,7 @@ func getDbInfoFromEnv() (dbDialect string, dbUri string) {
 	reg := regexp.MustCompile("^(postgres|mysql|sqlite|mssql)://(.+?):(.+?)@(.+?):([0-9]+)/(.+)$")
 	creds := make(map[string]string, 0)
 
-	if  reg.MatchString(dbUrl) {
+	if reg.MatchString(dbUrl) {
 		submatches := reg.FindStringSubmatch(dbUrl)
 		fmt.Println("match found", submatches)
 
@@ -57,7 +57,7 @@ func getDbInfoFromEnv() (dbDialect string, dbUri string) {
 
 func init() {
 	// dbLang, dbUri := getDbInfoFromEnv()
-	conn, err := gorm.Open(getDbInfoFromEnv())//(dbLang, dbUri)
+	conn, err := gorm.Open(getDbInfoFromEnv()) //(dbLang, dbUri)
 	if err != nil {
 		fmt.Print(err)
 		panic("failed to connect to database")
