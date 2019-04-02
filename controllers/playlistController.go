@@ -24,7 +24,20 @@ var CreatePlaylist = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var GetPlaylists = func(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value("user").(uint)
+	vals := r.URL.Query()          // Returns a url.Values, which is a map[string][]string
+	user_id, ok := vals["user_id"] // Note type, not ID. ID wasn't specified anywhere.
+
+	user := uint(0)
+	if ok && len(user_id) >= 1 {
+		id, err := strconv.ParseUint(user_id[0], 10, 32) // The first `?type=model`
+		if err != nil {
+			u.RespondBadRequest(w)
+			return
+		}
+		user = uint(id)
+	} else {
+		user = r.Context().Value("user").(uint)
+	}
 
 	data := models.GetPlaylists(uint(user))
 	resp := u.Message(true, "success")
@@ -42,6 +55,10 @@ var GetPlaylist = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := models.GetPlaylist(uint(id))
+	if data == nil {
+		u.RespondBadRequest(w)
+		return
+	}
 	resp := u.Message(true, "success")
 	resp["playlist"] = data
 	u.Respond(w, resp)
