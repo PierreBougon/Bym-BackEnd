@@ -1,9 +1,8 @@
 package models
 
 import (
-	u "github.com/PierreBougon/Bym-BackEnd/utils"
-
 	"fmt"
+	u "github.com/PierreBougon/Bym-BackEnd/utils"
 
 	"github.com/jinzhu/gorm"
 )
@@ -44,12 +43,12 @@ func (playlist *Playlist) Create(user uint) map[string]interface{} {
 }
 
 func GetPlaylist(u uint) *Playlist {
-	playlist := &Playlist{}
-	GetDB().Table("playlists").Where("id = ?", u).First(playlist)
-	if playlist.Name == "" {
+	retPlaylist := &Playlist{}
+	GetDB().Table("playlists").Where("id = ?", u).First(retPlaylist)
+	if retPlaylist.Name == "" {
 		return nil
 	}
-	return playlist
+	return retPlaylist
 }
 
 func GetPlaylists(user uint) []*Playlist {
@@ -62,4 +61,25 @@ func GetPlaylists(user uint) []*Playlist {
 	}
 
 	return playlists
+}
+
+func (playlist *Playlist) UpdatePlaylist(user uint, playlistId uint, newPlaylist *Playlist) map[string]interface{} {
+	retPlaylist := &Playlist{}
+	err := db.Where(&Playlist{UserId: user}).First(&retPlaylist, playlistId).Error
+	if err != nil {
+		return u.Message(false, "Invalid playlist, you may not own this playlist")
+	}
+	retPlaylist.Name = newPlaylist.Name
+	db.Save(&retPlaylist)
+	return u.Message(true, "Playlist successfully updated")
+}
+
+func (playlist *Playlist) DeletePlaylist(user uint, playlistId uint) map[string]interface{} {
+	retPlaylist := &Playlist{}
+	err := db.Where(&Playlist{UserId: user}).First(&retPlaylist, playlistId).Error
+	if err != nil {
+		return u.Message(false, "Invalid playlist, you may not own this playlist")
+	}
+	db.Delete(&retPlaylist)
+	return u.Message(true, "Playlist successfully deleted")
 }
