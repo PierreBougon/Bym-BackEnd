@@ -25,6 +25,7 @@ var _ = BeforeSuite(func() {
 		mockAccount := models.Account{
 			Email: "test@gmail.com",
 			Password: "123456",
+			TokenVersion: 0,
 		}
 		mockAccount.Create()
 		created = true

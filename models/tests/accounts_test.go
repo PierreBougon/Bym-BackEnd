@@ -66,10 +66,13 @@ var _ = Describe("Accounts", func() {
 				Expect(resp["status"]).To(BeTrue())
 				Expect(resp["account"]).ToNot(BeNil())
 
-				account, ok := resp["account"].(models.Account)
+				tokenString := resp["token"]
+				delete(resp, "token")
+
+				_, ok := resp["account"].(models.Account)
 
 				Expect(ok).To(BeTrue())
-				Expect(account.Token).ToNot(BeNil())
+				Expect(tokenString).ToNot(BeNil())
 			})
 		})
 	})
