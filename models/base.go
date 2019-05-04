@@ -29,7 +29,12 @@ func migrate() {
 		&Account{},
 		&Playlist{},
 		&Song{},
-		)
+		&Vote{})
+	db.Model(&Account{}).RemoveIndex("token")
+	db.Model(&Song{}).AddForeignKey("playlist_id", "playlists(id)", "CASCADE", "RESTRICT")
+	db.Model(&Playlist{}).AddForeignKey("user_id", "accounts(id)", "CASCADE", "RESTRICT")
+	db.Model(&Vote{}).AddForeignKey("user_id", "accounts(id)", "CASCADE", "RESTRICT")
+	db.Model(&Vote{}).AddForeignKey("song_id", "songs(id)", "CASCADE", "RESTRICT")
 }
 
 func getDbInfoFromEnv() (dbDialect string, dbUri string) {
@@ -37,7 +42,7 @@ func getDbInfoFromEnv() (dbDialect string, dbUri string) {
 	reg := regexp.MustCompile("^(postgres|mysql|sqlite|mssql)://(.+?):(.+?)@(.+?):([0-9]+)/(.+)$")
 	creds := make(map[string]string, 0)
 
-	if  reg.MatchString(dbUrl) {
+	if reg.MatchString(dbUrl) {
 		submatches := reg.FindStringSubmatch(dbUrl)
 		fmt.Println("match found", submatches)
 

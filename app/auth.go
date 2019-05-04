@@ -37,7 +37,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		}
 
 		tokenHeader := r.Header.Get("Authorization") //Grab the token from the header
-		if tokenHeader == "" { //Token is missing, returns with error code 403 Unauthorized
+		if tokenHeader == "" {                       //Token is missing, returns with error code 403 Unauthorized
 			sendErrorJson(w, "Missing auth token", http.StatusForbidden)
 			return
 		}
@@ -65,6 +65,15 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 			return
 		}
 
+		account := models.GetUser(tk.UserId)
+		if account == nil {
+			sendErrorJson(w, "Account does not exist", http.StatusForbidden)
+			return
+		}
+		if tk.TokenVersion != account.TokenVersion {
+			sendErrorJson(w, "Token is not valid anymore.", http.StatusForbidden)
+			return
+		}
 		//Everything went well, proceed with the request and set the caller to the user retrieved from the parsed token
 		//fmt.Sprintf("User %", tk.Username) //Useful for monitoring
 		ctx := context.WithValue(r.Context(), "user", tk.UserId)

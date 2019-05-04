@@ -26,15 +26,29 @@ func main() {
 	// Auth
 	router.HandleFunc("/api/user/new", controllers.CreateAccount).Methods("POST")
 	router.HandleFunc("/api/user/login", controllers.Authenticate).Methods("POST")
+	router.HandleFunc("/api/user/update_password", controllers.UpdatePassword).Methods("PATCH")
 
 	// Playlist
 	router.HandleFunc("/api/playlist", controllers.CreatePlaylist).Methods("POST")
 	router.HandleFunc("/api/playlist", controllers.GetPlaylists).Methods("GET")
 	router.HandleFunc("/api/playlist/{id}", controllers.GetPlaylist).Methods("GET")
+	router.HandleFunc("/api/playlist/{id}", controllers.UpdatePlaylist).Methods("PUT")
+	router.HandleFunc("/api/playlist/{id}", controllers.DeletePlaylist).Methods("DELETE")
 
 	// Songs
 	router.HandleFunc("/api/song", controllers.CreateSong).Methods("POST")
 	router.HandleFunc("/api/song", controllers.GetSongs).Methods("GET")
+	router.HandleFunc("/api/song/{id}", controllers.UpdateSong).Methods("PUT")
+	router.HandleFunc("/api/song/{id}", controllers.DeleteSong).Methods("DELETE")
+
+	// Ranking (Fraction of Songs parsed to access it directly)
+	router.HandleFunc("/api/song/ranking", controllers.GetRankings).Methods("GET")
+	router.HandleFunc("/api/song/ranking/{id}", controllers.GetRanking).Methods("GET")
+
+	// Votes
+	router.HandleFunc("/api/vote", controllers.UpdateOrCreateVote).Methods("PUT")
+	router.HandleFunc("/api/vote", controllers.GetVote).Methods("GET")
+	//	router.HandleFunc("/api/vote/{id}", controllers.DeleteSong).Methods("DELETE")
 
 	router.Use(app.JwtAuthentication)
 

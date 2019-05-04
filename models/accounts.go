@@ -15,16 +15,25 @@ import (
 JWT claims struct
 */
 type Token struct {
-	UserId uint
+	UserId       uint
+	TokenVersion uint
 	jwt.StandardClaims
 }
 
 //a struct to rep user account
 type Account struct {
 	gorm.Model
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Token    string `json:"token";sql:"-"`
+	Email        string     `json:"email"`
+	Password     string     `json:"password"`
+	TokenVersion uint       `json:"token_version"`
+	Playlists    []Playlist `gorm:"ForeignKey:UserId"`
+}
+
+func (account *Account) ValidatePassword() (map[string]interface{}, bool) {
+	if len(account.Password) < 6 {
+		return u.Message(false, "Password with more than 6 characters is required"), false
+	}
+	return nil, true
 }
 
 //Validate incoming user details...
@@ -34,10 +43,10 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Email address is required"), false
 	}
 
-	if len(account.Password) < 6 {
-		return u.Message(false, "Password with more than 6 characters is required"), false
+	resp, passed := account.ValidatePassword()
+	if !passed {
+		return resp, false
 	}
-
 	//Email must be unique
 	temp := &Account{}
 
@@ -61,6 +70,7 @@ func (account *Account) Create() map[string]interface{} {
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
 	account.Password = string(hashedPassword)
+	account.TokenVersion = 0
 
 	GetDB().Create(account)
 
@@ -69,15 +79,14 @@ func (account *Account) Create() map[string]interface{} {
 	}
 
 	//Create new JWT token for the newly registered account
-	tk := &Token{UserId: account.ID}
+	tk := &Token{UserId: account.ID, TokenVersion: account.TokenVersion}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
-	account.Token = tokenString
 
 	account.Password = "" //delete password
 
 	response := u.Message(true, "Account has been created")
-	response["account"] = account
+	response["token"] = tokenString
 	return response
 }
 
@@ -100,13 +109,12 @@ func Login(email, password string) map[string]interface{} {
 	account.Password = ""
 
 	//Create JWT token
-	tk := &Token{UserId: account.ID}
+	tk := &Token{UserId: account.ID, TokenVersion: account.TokenVersion}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
-	account.Token = tokenString //Store the token in the response
 
 	resp := u.Message(true, "Logged In")
-	resp["account"] = account
+	resp["token"] = tokenString
 	return resp
 }
 
@@ -120,4 +128,28 @@ func GetUser(u uint) *Account {
 
 	acc.Password = ""
 	return acc
+}
+
+func UpdatePassword(user uint, password string) map[string]interface{} {
+	account := &Account{}
+	db.First(account, user)
+
+	resp, passed := account.ValidatePassword()
+	if !passed {
+		return resp
+	}
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	account.Password = string(hashedPassword)
+
+	//Create new JWT token for the newly registered account
+	account.TokenVersion++
+	tk := &Token{UserId: account.ID, TokenVersion: account.TokenVersion}
+	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
+	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
+
+	db.Save(account)
+
+	ret := u.Message(true, "Password successfully updated")
+	ret["token"] = tokenString
+	return ret
 }
