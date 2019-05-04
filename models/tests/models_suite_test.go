@@ -10,7 +10,7 @@ import (
 
 var (
 	mockAccount	models.Account
-	created		bool
+	mockPlaylist models.Playlist
 )
 
 func TestModels(t *testing.T) {
@@ -18,26 +18,36 @@ func TestModels(t *testing.T) {
 	RunSpecs(t, "Models Suite")
 }
 
-var _ = BeforeSuite(func() {
+func loadMockAccount() {
 	ret := models.GetUser(6)
-	created = false
 	if ret == nil {
-		mockAccount := models.Account{
+		mockAccount = models.Account{
 			Email: "test@gmail.com",
 			Password: "123456",
 			TokenVersion: 0,
 		}
 		mockAccount.Create()
-		created = true
 	} else {
 		mockAccount = *ret
 	}
-})
+}
 
-var _ = AfterSuite(func() {
-	if created {
-		models.GetDB().Delete(mockAccount)
+func loadMockPlaylist() {
+	ret := models.GetPlaylistById(6)
+	if ret == nil {
+		mockPlaylist = models.Playlist{
+			Name: "test",
+			UserId: mockAccount.ID,
+		}
+		mockPlaylist.Create(mockAccount.ID)
+	} else {
+		mockPlaylist = *ret
 	}
+}
+
+var _ = BeforeSuite(func() {
+	loadMockAccount()
+	loadMockPlaylist()
 })
 
 var AssertValidationBehavior = func(t models.Table, success bool) {
