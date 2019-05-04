@@ -32,7 +32,10 @@ var _ = Describe("Songs", func() {
 				PlaylistId: song.PlaylistId,
 				ExternalId: song.ExternalId,
 			}
-			AssertValidationBehavior(&wrongName, false)
+			It("should be invalid", func() {
+				_, state := wrongName.Validate(mockAccount.ID)
+				Expect(state).To(Equal(false))
+			})
 		})
 
 		Context("With a playlistId equal to 0", func() {
@@ -41,7 +44,10 @@ var _ = Describe("Songs", func() {
 				PlaylistId: invalidSong.PlaylistId,
 				ExternalId: song.ExternalId,
 			}
-			AssertValidationBehavior(&wrongId, false)
+			It("should be invalid", func() {
+				_, state := wrongId.Validate(mockAccount.ID)
+				Expect(state).To(Equal(false))
+			})
 		})
 
 		Context("With an empty externalId", func() {
@@ -50,25 +56,32 @@ var _ = Describe("Songs", func() {
 				PlaylistId: song.PlaylistId,
 				ExternalId: invalidSong.ExternalId,
 			}
-			AssertValidationBehavior(&wrongExternal, false)
+			It("should be invalid", func() {
+				_, state := wrongExternal.Validate(mockAccount.ID)
+				Expect(state).To(Equal(false))
+			})
+
 		})
 
 		Context("With correct data", func() {
-			AssertValidationBehavior(&song, true)
+			It("should be valid", func() {
+				_, state := song.Validate(mockAccount.ID)
+				Expect(state).To(Equal(true))
+			})
 		})
 	})
 
 	Describe("Creating a Song", func() {
 		Context("With invalid data", func() {
 			It("should fail", func() {
-				resp := invalidSong.Create()
+				resp := invalidSong.Create(mockAccount.ID)
 				Expect(resp["status"]).To(BeFalse())
 			})
 		})
 		
 		Context("With valid data", func() {
 			It("should attribute an id and return the song", func() {
-				resp := song.Create()
+				resp := song.Create(mockAccount.ID)
 
 				Expect(resp["status"]).To(BeTrue())
 				Expect(resp["song"]).NotTo(BeNil())
