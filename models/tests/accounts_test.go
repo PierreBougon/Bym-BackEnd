@@ -19,13 +19,19 @@ var _ = Describe("Accounts", func() {
 
 	Describe("Validating account data", func() {
 		Context("With a wrong email", func() {
-			invalidAccount.Password = mockAccount.Password
-			AssertValidationBehavior(&invalidAccount, false)
+			wrongName := models.Account{
+				Email: invalidAccount.Email,
+				Password: mockAccount.Password,
+			}
+			AssertValidationBehavior(&wrongName, false)
 		})
 
 		Context("With a password having less than 6 character", func() {
-			invalidAccount.Email = mockAccount.Email
-			AssertValidationBehavior(&invalidAccount, false)
+			wrongPassword := models.Account{
+				Email: mockAccount.Email,
+				Password: invalidAccount.Password,
+			}
+			AssertValidationBehavior(&wrongPassword, false)
 		})
 
 		Context("With correct data", func() {
@@ -40,24 +46,6 @@ var _ = Describe("Accounts", func() {
 				Expect(resp["status"]).To(BeFalse())
 			})
 		})
-
-		/*
-		Context("With valid data", func() {
-			It("should attribute an id and return the account", func() {
-				resp := song.Create()
-
-				Expect(resp["status"]).To(BeTrue())
-				Expect(resp["song"]).NotTo(BeNil())
-				Expect(song.ID).To(BeNumerically(">", 0))
-			})
-
-			AfterEach(func() {
-				if song.ID > 0 {
-					db := models.GetDB()
-					db.Delete(&song)
-				}
-			})
-		})*/
 	})
 
 

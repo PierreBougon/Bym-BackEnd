@@ -16,7 +16,7 @@ var _ = Describe("Playlists", func() {
 	BeforeEach(func () {
 		playlist = models.Playlist{
 			Name: "Music",
-			UserId: 1,
+			UserId: mockAccount.ID,
 			Songs: make([]models.Song, 0),
 		}
 		invalidPlaylist = models.Playlist{

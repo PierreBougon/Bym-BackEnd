@@ -1,7 +1,6 @@
 package models_test
 
 import (
-	"fmt"
 	"github.com/PierreBougon/Bym-BackEnd/models"
 	"testing"
 
@@ -20,7 +19,7 @@ func TestModels(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	ret := models.GetUser(1)
+	ret := models.GetUser(6)
 	created = false
 	if ret == nil {
 		mockAccount := models.Account{
@@ -46,7 +45,6 @@ var AssertValidationBehavior = func(t models.Table, success bool) {
 		validity = "valid"
 	}
 	It("should be " + validity, func() {
-		fmt.Println(t)
 		_, state := t.Validate()
 		Expect(state).To(Equal(success))
 	})
