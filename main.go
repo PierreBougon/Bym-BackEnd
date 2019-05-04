@@ -41,6 +41,15 @@ func main() {
 	router.HandleFunc("/api/song/{id}", controllers.UpdateSong).Methods("PUT")
 	router.HandleFunc("/api/song/{id}", controllers.DeleteSong).Methods("DELETE")
 
+	// Ranking (Fraction of Songs parsed to access it directly)
+	router.HandleFunc("/api/song/ranking", controllers.GetRankings).Methods("GET")
+	router.HandleFunc("/api/song/ranking/{id}", controllers.GetRanking).Methods("GET")
+
+	// Votes
+	router.HandleFunc("/api/vote", controllers.UpdateOrCreateVote).Methods("PUT")
+	router.HandleFunc("/api/vote", controllers.GetVote).Methods("GET")
+	//	router.HandleFunc("/api/vote/{id}", controllers.DeleteSong).Methods("DELETE")
+
 	router.Use(app.JwtAuthentication)
 
 	err := http.ListenAndServe(":"+port, router) //Launch the app, visit localhost:8000/api
