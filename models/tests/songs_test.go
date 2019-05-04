@@ -15,8 +15,11 @@ var _ = Describe("Songs", func() {
 	BeforeEach(func () {
 		song = models.Song{
 			Name: "Music",
-			PlaylistId: 1,
+			PlaylistId: mockPlaylist.ID,
 			ExternalId: "cameFromSomewhere",
+			VoteUp: 0,
+			VoteDown: 0,
+			Score: 0,
 		}
 		invalidSong = models.Song{
 			Name: "",
@@ -25,17 +28,29 @@ var _ = Describe("Songs", func() {
 		}
 	})
 
+	var assertSongValidationBehavior = func(s *models.Song, success bool) {
+		validity := "invalid"
+		if success {
+			validity = "valid"
+		}
+		It("should be " + validity, func() {
+			resp, state := s.Validate(mockAccount.ID)
+			Expect(state).To(Equal(success), "%s %+v", resp["message"], s)
+		})
+	}
+
 	Describe("Validating Song data", func() {
+		Context("With correct data", func() {
+			assertSongValidationBehavior(&song, true)
+		})
+
 		Context("With an empty name", func() {
 			wrongName := models.Song{
 				Name: invalidSong.Name,
 				PlaylistId: song.PlaylistId,
 				ExternalId: song.ExternalId,
 			}
-			It("should be invalid", func() {
-				_, state := wrongName.Validate(mockAccount.ID)
-				Expect(state).To(Equal(false))
-			})
+			assertSongValidationBehavior(&wrongName, false)
 		})
 
 		Context("With a playlistId equal to 0", func() {
@@ -44,10 +59,7 @@ var _ = Describe("Songs", func() {
 				PlaylistId: invalidSong.PlaylistId,
 				ExternalId: song.ExternalId,
 			}
-			It("should be invalid", func() {
-				_, state := wrongId.Validate(mockAccount.ID)
-				Expect(state).To(Equal(false))
-			})
+			assertSongValidationBehavior(&wrongId, false)
 		})
 
 		Context("With an empty externalId", func() {
@@ -56,51 +68,43 @@ var _ = Describe("Songs", func() {
 				PlaylistId: song.PlaylistId,
 				ExternalId: invalidSong.ExternalId,
 			}
-			It("should be invalid", func() {
-				_, state := wrongExternal.Validate(mockAccount.ID)
-				Expect(state).To(Equal(false))
-			})
+			assertSongValidationBehavior(&wrongExternal, false)
 
 		})
 
-		Context("With correct data", func() {
-			It("should be valid", func() {
-				_, state := song.Validate(mockAccount.ID)
-				Expect(state).To(Equal(true))
-			})
-		})
 	})
 
 	Describe("Creating a Song", func() {
 		Context("With invalid data", func() {
 			It("should fail", func() {
 				resp := invalidSong.Create(mockAccount.ID)
-				Expect(resp["status"]).To(BeFalse())
+				Expect(resp["status"]).To(BeFalse(), resp["message"])
 			})
 		})
 		
 		Context("With valid data", func() {
-			It("should attribute an id and return the song", func() {
-				resp := song.Create(mockAccount.ID)
-
-				Expect(resp["status"]).To(BeTrue())
-				Expect(resp["song"]).NotTo(BeNil())
-				Expect(song.ID).To(BeNumerically(">", 0))
-			})
-
 			AfterEach(func() {
 				if song.ID > 0 {
 					db := models.GetDB()
 					db.Delete(&song)
 				}
 			})
+
+			It("should attribute an id and return the song", func() {
+				resp := song.Create(mockAccount.ID)
+
+				Expect(resp["status"]).To(BeTrue(), "%s %+v", resp["message"], song)
+				Expect(resp["song"]).NotTo(BeNil())
+				Expect(song.ID).To(BeNumerically(">", 0))
+			})
+
 		})
 	})
 
 	Describe("Fetching all songs from a playlist", func() {
 		Context("With a playlist ID", func() {
 			It("should return a list", func() {
-				var s interface{} = models.GetSongs(1)
+				var s interface{} = models.GetSongs(15)
 				songs, ok := s.([]*models.Song)
 
 				Expect(ok).To(BeTrue())

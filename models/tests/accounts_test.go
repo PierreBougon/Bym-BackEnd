@@ -1,7 +1,6 @@
 package models_test
 
 import (
-	"fmt"
 	"github.com/PierreBougon/Bym-BackEnd/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -16,14 +15,31 @@ var _ = Describe("Accounts", func() {
 			Password: "hi",
 		}
 	})
-
+	var AssertValidationBehavior = func(s *models.Account, success bool) {
+		validity := "invalid"
+		if success {
+			validity = "valid"
+		}
+		It("should be " + validity, func() {
+			resp, state := s.Validate()
+			Expect(state).To(Equal(success), "%s %+v", resp["message"], s)
+		})
+	}
 	Describe("Validating account data", func() {
 		Context("With a wrong email", func() {
-			wrongName := models.Account{
+			wrongEmail := models.Account{
 				Email: invalidAccount.Email,
 				Password: mockAccount.Password,
 			}
-			AssertValidationBehavior(&wrongName, false)
+			AssertValidationBehavior(&wrongEmail, false)
+		})
+
+		Context("With an already used email", func() {
+			wrongEmail := models.Account{
+				Email: mockAccount.Email,
+				Password: mockAccount.Password,
+			}
+			AssertValidationBehavior(&wrongEmail, false)
 		})
 
 		Context("With a password having less than 6 character", func() {
@@ -35,7 +51,14 @@ var _ = Describe("Accounts", func() {
 		})
 
 		Context("With correct data", func() {
-			AssertValidationBehavior(&mockAccount, true)
+			It("should be valid", func() {
+				newAccount:= models.Account{
+					Email: "NEWtest@gmail.com",
+					Password: mockAccount.Password,
+				}
+				resp, state := newAccount.Validate()
+				Expect(state).To(BeTrue(), resp["message"])
+			})
 		})
 	})
 
@@ -54,7 +77,7 @@ var _ = Describe("Accounts", func() {
 			It("should fail and return an error message", func() {
 				resp := models.Login(invalidAccount.Email, invalidAccount.Password)
 
-				Expect(resp["status"]).To(BeFalse())
+				Expect(resp["status"]).To(BeFalse(), resp["message"])
 				Expect(resp["account"]).To(BeNil())
 			})
 		})
@@ -62,17 +85,10 @@ var _ = Describe("Accounts", func() {
 		Context("With the right credentials", func() {
 			It("should return the Account you logged into and assign it a token", func() {
 				resp := models.Login(mockAccount.Email, mockAccount.Password)
-				fmt.Println(resp)
-				Expect(resp["status"]).To(BeTrue())
-				Expect(resp["account"]).ToNot(BeNil())
 
-				tokenString := resp["token"]
-				delete(resp, "token")
 
-				_, ok := resp["account"].(models.Account)
-
-				Expect(ok).To(BeTrue())
-				Expect(tokenString).ToNot(BeNil())
+				Expect(resp["status"]).To(BeTrue(), resp["message"])
+				Expect(resp["token"]).ToNot(BeNil())
 			})
 		})
 	})

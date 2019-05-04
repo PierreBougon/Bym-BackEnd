@@ -18,26 +18,29 @@ func TestModels(t *testing.T) {
 	RunSpecs(t, "Models Suite")
 }
 
-func loadMockAccount() {
+func LoadMockAccount() {
 	ret := models.GetUser(6)
+	mockAccountPassword := "123456"
 	if ret == nil {
 		mockAccount = models.Account{
 			Email: "test@gmail.com",
-			Password: "123456",
+			Password: string([]byte(mockAccountPassword)),
 			TokenVersion: 0,
 		}
 		mockAccount.Create()
 	} else {
 		mockAccount = *ret
 	}
+	mockAccount.Password = string([]byte(mockAccountPassword))
 }
 
 func loadMockPlaylist() {
-	ret := models.GetPlaylistById(6)
+	ret := models.GetPlaylistById(15)
 	if ret == nil {
 		mockPlaylist = models.Playlist{
-			Name: "test",
+			Name: "MockTest",
 			UserId: mockAccount.ID,
+			Songs: make([]models.Song, 0),
 		}
 		mockPlaylist.Create(mockAccount.ID)
 	} else {
@@ -46,7 +49,7 @@ func loadMockPlaylist() {
 }
 
 var _ = BeforeSuite(func() {
-	loadMockAccount()
+	LoadMockAccount()
 	loadMockPlaylist()
 })
 
@@ -56,7 +59,7 @@ var AssertValidationBehavior = func(t models.Table, success bool) {
 		validity = "valid"
 	}
 	It("should be " + validity, func() {
-		_, state := t.Validate()
-		Expect(state).To(Equal(success))
+		resp, state := t.Validate()
+		Expect(state).To(Equal(success), resp["message"])
 	})
 }
