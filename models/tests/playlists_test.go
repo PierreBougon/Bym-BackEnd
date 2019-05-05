@@ -73,7 +73,7 @@ var _ = Describe("Playlists", func() {
 	Describe("Fetching all playlists from a user", func() {
 		Context("With a correct ID", func() {
 			It("should return a list", func() {
-				var s interface{} = models.GetPlaylists(mockAccount.ID)
+				var s interface{} = models.GetPlaylistsByUser(mockAccount.ID)
 				playlists, ok := s.([]*models.Playlist)
 
 				Expect(ok).To(BeTrue())
