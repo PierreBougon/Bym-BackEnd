@@ -8,19 +8,10 @@ import (
 
 var _ = Describe("Songs", func() {
 	var (
-		song models.Song
 		invalidSong models.Song
 	)
 
 	BeforeEach(func () {
-		song = models.Song{
-			Name: "Music",
-			PlaylistId: mockPlaylist.ID,
-			ExternalId: "cameFromSomewhere",
-			VoteUp: 0,
-			VoteDown: 0,
-			Score: 0,
-		}
 		invalidSong = models.Song{
 			Name: "",
 			PlaylistId: 0,
@@ -41,31 +32,31 @@ var _ = Describe("Songs", func() {
 
 	Describe("Validating Song data", func() {
 		Context("With correct data", func() {
-			assertSongValidationBehavior(&song, true)
+			assertSongValidationBehavior(&mockSong, true)
 		})
 
 		Context("With an empty name", func() {
 			wrongName := models.Song{
 				Name: invalidSong.Name,
-				PlaylistId: song.PlaylistId,
-				ExternalId: song.ExternalId,
+				PlaylistId: mockSong.PlaylistId,
+				ExternalId: mockSong.ExternalId,
 			}
 			assertSongValidationBehavior(&wrongName, false)
 		})
 
 		Context("With a playlistId equal to 0", func() {
 			wrongId := models.Song{
-				Name: song.Name,
+				Name: mockSong.Name,
 				PlaylistId: invalidSong.PlaylistId,
-				ExternalId: song.ExternalId,
+				ExternalId: mockSong.ExternalId,
 			}
 			assertSongValidationBehavior(&wrongId, false)
 		})
 
 		Context("With an empty externalId", func() {
 			wrongExternal := models.Song{
-				Name: song.Name,
-				PlaylistId: song.PlaylistId,
+				Name: mockSong.Name,
+				PlaylistId: mockSong.PlaylistId,
 				ExternalId: invalidSong.ExternalId,
 			}
 			assertSongValidationBehavior(&wrongExternal, false)
@@ -83,21 +74,35 @@ var _ = Describe("Songs", func() {
 		})
 		
 		Context("With valid data", func() {
-			AfterEach(func() {
-				if song.ID > 0 {
-					db := models.GetDB()
-					db.Delete(&song)
+			var (
+				song models.Song
+			    resp map[string]interface{}
+			    cleanSong = func() {
+					if song.ID > 0 {
+						db := models.GetDB()
+						db.Delete(&song)
+					}
 				}
-			})
+			)
 
-			It("should attribute an id and return the song", func() {
-				resp := song.Create(mockAccount.ID)
+			It("should succeed", func() {
+				defer cleanSong()
+				song = models.Song{
+					Name: "New" + mockSong.Name,
+					PlaylistId: mockSong.PlaylistId,
+					ExternalId: mockSong.ExternalId,
+				}
 
+				resp = song.Create(mockAccount.ID)
 				Expect(resp["status"]).To(BeTrue(), "%s %+v", resp["message"], song)
-				Expect(resp["song"]).NotTo(BeNil())
-				Expect(song.ID).To(BeNumerically(">", 0))
 			})
+			It("should return the created song", func() {
+				Expect(resp["song"]).NotTo(BeNil())
+				res, ok := (resp["song"]).(*models.Song)
 
+				Expect(ok).To(BeTrue(), "It did not return an instance of Song", resp)
+				Expect(res.ID).To(BeNumerically(">", mockSong.ID))
+			})
 		})
 	})
 
@@ -109,6 +114,44 @@ var _ = Describe("Songs", func() {
 
 				Expect(ok).To(BeTrue())
 				Expect(songs).ToNot(BeNil())
+			})
+		})
+	})
+
+	Describe("Fetching songs ranking from a playlist", func() {
+		Context("With an invalid (non-existing or deleted) playlist ID", func() {
+			It("should return an empty list of type Ranking", func() {
+				var s interface{} = models.GetSongsRanking(0)
+				songs, ok := s.([]*models.Ranking)
+
+				Expect(ok).To(BeTrue())
+				Expect(songs).To(BeEmpty())
+			})
+		})
+
+		Context("With a valid playlist ID", func() {
+			It("should return a list of type Ranking", func() {
+				var s interface{} = models.GetSongsRanking(mockPlaylist.ID)
+				songs, ok := s.([]*models.Ranking)
+
+				Expect(ok).To(BeTrue())
+				Expect(songs).ToNot(BeNil())
+			})
+		})
+	})
+
+	Describe("Fetching a Song ranking data", func() {
+		Context("With an invalid Song id", func() {
+			It("should return nil", func() {
+				ranking := models.GetSongRankingById(0)
+				Expect(ranking).To(BeNil())
+			})
+		})
+
+		Context("With a valid Song id", func() {
+			It("should return a *Ranking", func() {
+				ranking := models.GetSongRankingById(mockSong.ID)
+				Expect(*ranking).ToNot(Equal(models.Ranking{}))
 			})
 		})
 	})
