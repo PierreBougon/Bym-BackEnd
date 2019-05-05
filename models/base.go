@@ -14,7 +14,7 @@ var db *gorm.DB //database
 
 func loadDotEnv() {
 	cwd, e := os.Getwd()
-	envPath := "../.env"
+	envPath := "./.env"
 	if strings.HasSuffix(cwd, "tests") {
 		envPath = "../../.env"
 	}
@@ -62,9 +62,13 @@ func getDbInfoFromEnv() (dbDialect string, dbUri string) {
 		creds["database"] = os.Getenv("db_name")
 	}
 
+	sslmode := "require"
+	if creds["host"] == "localhost" || creds["host"] == "127.0.0.1" {
+		sslmode = "disable"
+	}
 	dbUri = fmt.Sprintf(
-		"host=%s user=%s dbname=%s password=%s sslmode=require",
-		creds["host"], creds["user"], creds["database"], creds["pass"]) //Build connection string
+		"host=%s user=%s dbname=%s password=%s sslmode=%s",
+		creds["host"], creds["user"], creds["database"], creds["pass"], sslmode) //Build connection string
 	return
 }
 
