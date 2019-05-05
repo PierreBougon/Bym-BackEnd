@@ -54,7 +54,7 @@ var GetPlaylist = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.GetPlaylist(uint(id))
+	data := models.GetPlaylistById(uint(id))
 	if data == nil {
 		u.RespondBadRequest(w)
 		return

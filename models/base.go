@@ -7,9 +7,22 @@ import (
 	"github.com/joho/godotenv"
 	"os"
 	"regexp"
+	"strings"
 )
 
 var db *gorm.DB //database
+
+func loadDotEnv() {
+	cwd, e := os.Getwd()
+	envPath := "../.env"
+	if strings.HasSuffix(cwd, "tests") {
+		envPath = "../../.env"
+	}
+	e = godotenv.Load(envPath)
+	if e != nil {
+		fmt.Print(e)
+	}
+}
 
 func migrate() {
 	db.AutoMigrate(
@@ -40,11 +53,7 @@ func getDbInfoFromEnv() (dbDialect string, dbUri string) {
 		// creds["port"] = submatches[5]
 		creds["database"] = submatches[6]
 	} else {
-		e := godotenv.Load() //Load .env file
-		if e != nil {
-			fmt.Print(e)
-		}
-
+		loadDotEnv()
 		dbDialect = os.Getenv("db_dialect")
 		creds["user"] = os.Getenv("db_user")
 		creds["pass"] = os.Getenv("db_pass")
@@ -56,13 +65,11 @@ func getDbInfoFromEnv() (dbDialect string, dbUri string) {
 	dbUri = fmt.Sprintf(
 		"host=%s user=%s dbname=%s password=%s sslmode=require",
 		creds["host"], creds["user"], creds["database"], creds["pass"]) //Build connection string
-	fmt.Println(dbDialect, dbUri)
 	return
 }
 
 func init() {
-	// dbLang, dbUri := getDbInfoFromEnv()
-	conn, err := gorm.Open(getDbInfoFromEnv()) //(dbLang, dbUri)
+	conn, err := gorm.Open(getDbInfoFromEnv())
 	if err != nil {
 		fmt.Print(err)
 		panic("failed to connect to database")
@@ -70,7 +77,6 @@ func init() {
 
 	db = conn
 	migrate()
-	// db.Debug().AutoMigrate(&Account{}, &Playlist{}, &Song{}) //Database migration
 }
 
 //returns a handle to the DB object
