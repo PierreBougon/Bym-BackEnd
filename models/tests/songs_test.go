@@ -119,10 +119,12 @@ var _ = Describe("Songs", func() {
 		})
 
 		AfterEach(func() {
+			models.GetDB().First(&mockSong, mockSong.ID)
 			if mockSong.Name == newSongName {
 				models.GetDB().
 					Model(&mockSong).
 					Update("name", oldName)
+				mockSong.Name = oldName
 			}
 		})
 
