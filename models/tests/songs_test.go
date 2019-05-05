@@ -104,7 +104,7 @@ var _ = Describe("Songs", func() {
 	Describe("Fetching all songs from a playlist", func() {
 		Context("With a playlist ID", func() {
 			It("should return a list", func() {
-				var s interface{} = models.GetSongs(15)
+				var s interface{} = models.GetSongs(mockPlaylist.ID)
 				songs, ok := s.([]*models.Song)
 
 				Expect(ok).To(BeTrue())
