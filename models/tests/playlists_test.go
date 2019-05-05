@@ -54,6 +54,54 @@ var _ = Describe("Playlists", func() {
 
 	})
 
+	Describe("Updating a Playlist", func() {
+		var oldName string
+		newPlaylistName := "updatedName"
+		newPlaylist := models.Playlist{
+			Name: newPlaylistName,
+			// other attributes are not used to update
+		}
+
+		BeforeEach(func() {
+			oldName = mockPlaylist.Name
+		})
+
+		AfterEach(func() {
+			models.GetDB().First(&mockPlaylist, mockPlaylist.ID)
+			if mockPlaylist.Name == newPlaylistName {
+				models.GetDB().
+					Model(&mockPlaylist).
+					Update("name", oldName)
+				mockPlaylist.Name = oldName
+			}
+		})
+
+		Context("Which does not belong to the user", func() {
+			It("should fail with an error message", func() {
+				resp := mockPlaylist.UpdatePlaylist(mockPlaylist.UserId + 1, mockPlaylist.ID, &newPlaylist)
+
+				Expect(resp["status"]).To(BeFalse())
+			})
+
+		})
+
+		Context("Which belongs to the user", func() {
+			It("should successfully modify the Playlist name", func() {
+				resp := mockPlaylist.UpdatePlaylist(mockAccount.ID, mockPlaylist.ID, &newPlaylist)
+
+				Expect(resp["status"]).To(BeTrue())
+
+				mock := models.Song{}
+				err := models.GetDB().Table("playlists").
+					Where("id = ?", mockPlaylist.ID).Find(&mock).Error
+				if err != nil {
+					Fail(err.Error())
+				}
+				Expect(mock.Name).To(Equal(newPlaylistName))
+			})
+		})
+	})
+
 	Describe("Fetching a playlist", func() {
 		Context("With a wrong playlist ID", func() {
 			It("should return nothing", func() {
