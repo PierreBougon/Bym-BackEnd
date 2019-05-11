@@ -9,6 +9,18 @@ import (
 var _ = Describe("Songs", func() {
 	var (
 		invalidSong models.Song
+
+		assertSongValidationBehavior = func(t *models.Song, accountId uint, success bool) {
+			resp, state := t.Validate(accountId)
+			Expect(state).To(Equal(success), "%s : %+v", resp["message"], t)
+		}
+
+		cleanSong = func(song models.Song) {
+			if song.ID > 0 {
+				db := models.GetDB()
+				db.Delete(&song)
+			}
+		}
 	)
 
 	BeforeEach(func () {
@@ -18,11 +30,6 @@ var _ = Describe("Songs", func() {
 			ExternalId: "",
 		}
 	})
-
-	var assertSongValidationBehavior = func(t *models.Song, accountId uint, success bool) {
-		resp, state := t.Validate(accountId)
-		Expect(state).To(Equal(success), "%s : %+v", resp["message"], t)
-	}
 
 	Describe("Validating Song data", func() {
 		Context("With correct data", func() {
@@ -78,15 +85,9 @@ var _ = Describe("Songs", func() {
 		var (
 			song models.Song
 			resp map[string]interface{}
-			cleanSong = func() {
-				if song.ID > 0 {
-					db := models.GetDB()
-					db.Delete(&song)
-				}
-			}
 		)
 
-		AfterEach(cleanSong)
+		AfterEach(func() { cleanSong(song) })
 
 		Context("With invalid data", func() {
 			It("should fail", func() {
@@ -112,6 +113,51 @@ var _ = Describe("Songs", func() {
 
 				Expect(ok).To(BeTrue(), "It did not return an instance of Song", resp)
 				Expect(res.ID).To(BeNumerically(">", mockSong.ID))
+			})
+		})
+	})
+
+	Describe("Deleting a Song", func() {
+		var (
+			songToDelete models.Song
+
+			shouldRecordStillExist = func(shouldExist bool) {
+				stillExist := !models.GetDB().First(&models.Song{}, songToDelete.ID).RecordNotFound()
+				Expect(stillExist).To(Equal(shouldExist), "%+v", songToDelete)
+			}
+		)
+
+		BeforeEach(func() {
+			songToDelete = models.Song{
+				Name: "ToDelete" + mockSong.Name,
+				PlaylistId: mockPlaylist.ID,
+				ExternalId: "cameToBeDeleted",
+			}
+			err := models.GetDB().Create(&songToDelete).Error
+			if err != nil {
+				panic("connection error : " + err.Error())
+			}
+		})
+
+		AfterEach(func() { cleanSong(songToDelete) })
+
+		Context("Which does not belong to the user", func() {
+			It("should fail with an error message", func() {
+				resp := mockSong.DeleteSong(mockPlaylist.UserId + 1, songToDelete.ID)
+
+				Expect(resp["status"]).To(BeFalse(), "song was deleted without ownership")
+
+				shouldRecordStillExist(true)
+			})
+		})
+
+		Context("Which belong to the user", func() {
+			It("should succeed", func() {
+				resp := mockSong.DeleteSong(mockPlaylist.UserId, songToDelete.ID)
+
+				Expect(resp["status"]).To(BeTrue(), "song was not deleted")
+
+				shouldRecordStillExist(false)
 			})
 		})
 	})
