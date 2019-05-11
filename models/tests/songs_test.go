@@ -15,10 +15,14 @@ var _ = Describe("Songs", func() {
 			Expect(state).To(Equal(success), "%s : %+v", resp["message"], t)
 		}
 
+		songRecordExists = func(song models.Song) bool {
+			return !models.GetDB().First(&models.Song{}, song.ID).RecordNotFound()
+		}
+
 		cleanSong = func(song models.Song) {
-			if song.ID > 0 {
-				db := models.GetDB()
-				db.Delete(&song)
+			if songRecordExists(song) {
+				models.GetDB().
+					Delete(&song)
 			}
 		}
 	)
@@ -122,7 +126,7 @@ var _ = Describe("Songs", func() {
 			songToDelete models.Song
 
 			shouldRecordStillExist = func(shouldExist bool) {
-				stillExist := !models.GetDB().First(&models.Song{}, songToDelete.ID).RecordNotFound()
+				stillExist := songRecordExists(songToDelete)
 				Expect(stillExist).To(Equal(shouldExist), "%+v", songToDelete)
 			}
 		)
