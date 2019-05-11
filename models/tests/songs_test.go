@@ -86,10 +86,7 @@ var _ = Describe("Songs", func() {
 	})
 
 	Describe("Creating a Song", func() {
-		var (
-			song models.Song
-			resp map[string]interface{}
-		)
+		var song models.Song
 
 		AfterEach(func() { cleanSong(song) })
 
@@ -109,14 +106,14 @@ var _ = Describe("Songs", func() {
 					ExternalId: mockSong.ExternalId,
 				}
 
-				resp = song.Create(mockAccount.ID)
+				resp := song.Create(mockAccount.ID)
 				Expect(resp["status"]).To(BeTrue(), "%s %+v", resp["message"], song)
 
 				Expect(resp["song"]).NotTo(BeNil())
 				res, ok := (resp["song"]).(*models.Song)
 
 				Expect(ok).To(BeTrue(), "It did not return an instance of Song", resp)
-				Expect(res.ID).To(BeNumerically(">", mockSong.ID))
+				Expect(songRecordExists(*res)).To(BeTrue(), "The return record does not exist in the database")
 			})
 		})
 	})
@@ -139,7 +136,7 @@ var _ = Describe("Songs", func() {
 			}
 			err := models.GetDB().Create(&songToDelete).Error
 			if err != nil {
-				panic("connection error : " + err.Error())
+				panic("database error : " + err.Error())
 			}
 		})
 

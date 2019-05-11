@@ -10,6 +10,17 @@ import (
 var _ = Describe("Playlists", func() {
 	var (
 		invalidPlaylist models.Playlist
+
+		playlistRecordExists = func(playlist models.Playlist) bool {
+			return !models.GetDB().First(&models.Playlist{}, playlist.ID).RecordNotFound()
+		}
+
+		cleanPlaylist = func(playlist models.Playlist) {
+			if playlistRecordExists(playlist) {
+				models.GetDB().
+					Delete(&playlist)
+			}
+		}
 	)
 
 	BeforeEach(func () {
@@ -42,6 +53,7 @@ var _ = Describe("Playlists", func() {
 		})
 
 		Context("With correct data", func() {
+
 			It("should be valid", func() {
 				AssertValidationBehavior(&mockPlaylist, true)
 			})
@@ -49,6 +61,10 @@ var _ = Describe("Playlists", func() {
 	})
 
 	Describe("Creating a Playlist", func() {
+		var playlist models.Playlist
+
+		AfterEach(func() { cleanPlaylist(playlist) })
+
 		Context("With invalid data", func() {
 			It("should fail", func() {
 				resp := invalidPlaylist.Create(mockAccount.ID)
@@ -56,6 +72,67 @@ var _ = Describe("Playlists", func() {
 			})
 		})
 
+		Context("With valid data", func() {
+			It("should succeed and return the created playlist", func() {
+				playlist = models.Playlist{
+					Name: "New" + mockPlaylist.Name,
+				}
+
+				resp := playlist.Create(mockAccount.ID)
+				Expect(resp["status"]).To(BeTrue(), "%s %+v", resp["message"], playlist)
+
+				Expect(resp["playlist"]).NotTo(BeNil())
+				res, ok := (resp["playlist"]).(*models.Playlist)
+
+				Expect(ok).To(BeTrue(), "It did not return an instance of Playlist", resp)
+				Expect(playlistRecordExists(*res)).To(BeTrue(), "The return record does not exist in the database")
+			})
+		})
+
+	})
+
+	Describe("Deleting a Playlist", func() {
+		var (
+			playlistToDelete models.Playlist
+
+			shouldRecordStillExist = func(shouldExist bool) {
+				stillExist := playlistRecordExists(playlistToDelete)
+				Expect(stillExist).To(Equal(shouldExist), "%+v", playlistToDelete)
+			}
+		)
+
+		BeforeEach(func() {
+			playlistToDelete = models.Playlist{
+				Name: "ToDelete" + mockPlaylist.Name,
+				UserId: mockAccount.ID,
+			}
+			err := models.GetDB().Create(&playlistToDelete).Error
+			if err != nil {
+				panic("database error : " + err.Error())
+			}
+		})
+
+		AfterEach(func() { cleanPlaylist(playlistToDelete) })
+
+		Context("Which does not belong to the user", func() {
+			It("should fail with an error message", func() {
+				resp := mockPlaylist.DeletePlaylist(mockPlaylist.UserId + 1, playlistToDelete.ID)
+
+				Expect(resp["status"]).To(BeFalse(), "playlist was deleted without ownership")
+
+				shouldRecordStillExist(true)
+			})
+		})
+
+		Context("Which belong to the user", func() {
+			It("should succeed", func() {
+				resp := mockPlaylist.DeletePlaylist(mockPlaylist.UserId, playlistToDelete.ID)
+
+				Expect(resp["status"]).To(BeTrue(), "playlist was not deleted")
+
+				shouldRecordStillExist(false)
+			})
+		})
 	})
 
 	Describe("Updating a Playlist", func() {
