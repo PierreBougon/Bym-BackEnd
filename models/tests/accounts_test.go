@@ -15,49 +15,46 @@ var _ = Describe("Accounts", func() {
 			Password: "hi",
 		}
 	})
+
 	var AssertValidationBehavior = func(s *models.Account, success bool) {
-		validity := "invalid"
-		if success {
-			validity = "valid"
-		}
-		It("should be " + validity, func() {
 			resp, state := s.Validate()
 			Expect(state).To(Equal(success), "%s %+v", resp["message"], s)
-		})
 	}
+
 	Describe("Validating account data", func() {
 		Context("With a wrong email", func() {
-			wrongEmail := models.Account{
-				Email: invalidAccount.Email,
-				Password: mockAccount.Password,
-			}
-			AssertValidationBehavior(&wrongEmail, false)
+			It("should be invalid", func() {
+				AssertValidationBehavior(&models.Account{
+					Email: invalidAccount.Email,
+					Password: mockAccount.Password,
+				}, false)
+			})
 		})
 
 		Context("With an already used email", func() {
-			wrongEmail := models.Account{
-				Email: mockAccount.Email,
-				Password: mockAccount.Password,
-			}
-			AssertValidationBehavior(&wrongEmail, false)
+			It("should be invalid", func() {
+				AssertValidationBehavior(&models.Account{
+					Email: mockAccount.Email,
+					Password: mockAccount.Password,
+				}, false)
+			})
 		})
 
 		Context("With a password having less than 6 character", func() {
-			wrongPassword := models.Account{
-				Email: mockAccount.Email,
-				Password: invalidAccount.Password,
-			}
-			AssertValidationBehavior(&wrongPassword, false)
+			It("should be invalid", func() {
+				AssertValidationBehavior(&models.Account{
+					Email: mockAccount.Email,
+					Password: invalidAccount.Password,
+				}, false)
+			})
 		})
 
 		Context("With correct data", func() {
 			It("should be valid", func() {
-				newAccount:= models.Account{
-					Email: "NEWtest@gmail.com",
+				AssertValidationBehavior(&models.Account{
+					Email: "NotDuplicate" + mockAccount.Email,
 					Password: mockAccount.Password,
-				}
-				resp, state := newAccount.Validate()
-				Expect(state).To(BeTrue(), resp["message"])
+				}, true)
 			})
 		})
 	})
@@ -73,9 +70,18 @@ var _ = Describe("Accounts", func() {
 
 
 	Describe("Logging into an Account", func() {
-		Context("With the wrong credentials", func() {
+		Context("With the a non-existing email", func() {
 			It("should fail and return an error message", func() {
 				resp := models.Login(invalidAccount.Email, invalidAccount.Password)
+
+				Expect(resp["status"]).To(BeFalse(), resp["message"])
+				Expect(resp["account"]).To(BeNil())
+			})
+		})
+
+		Context("With the an incorrect password", func() {
+			It("should fail and return an error message", func() {
+				resp := models.Login(mockAccount.Email, invalidAccount.Password)
 
 				Expect(resp["status"]).To(BeFalse(), resp["message"])
 				Expect(resp["account"]).To(BeNil())
