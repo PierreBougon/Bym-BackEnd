@@ -1,0 +1,10 @@
+language: go
+go:
+  - "1.11.5"
+
+install:
+  - go get -u github.com/kardianos/govendor
+  - export PATH=$PATH:$HOME/gopath/bin
+  - govendor sync
+
+script: ginkgo -r --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race --compilers=2
