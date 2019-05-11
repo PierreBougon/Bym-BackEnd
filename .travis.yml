@@ -7,4 +7,4 @@ install:
   - export PATH=$PATH:$HOME/gopath/bin
   - govendor sync
 
-script: ginkgo -r --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race --compilers=2
+script: ginkgo --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race --compilers=2 -covermode=atomic -coverpkg ./... ./...
