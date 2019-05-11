@@ -85,7 +85,7 @@ var _ = Describe("Songs", func() {
 				}
 			)
 
-			It("should succeed", func() {
+			It("should succeed and return the created song", func() {
 				defer cleanSong()
 				song = models.Song{
 					Name: "New" + mockSong.Name,
@@ -95,8 +95,7 @@ var _ = Describe("Songs", func() {
 
 				resp = song.Create(mockAccount.ID)
 				Expect(resp["status"]).To(BeTrue(), "%s %+v", resp["message"], song)
-			})
-			It("should return the created song", func() {
+
 				Expect(resp["song"]).NotTo(BeNil())
 				res, ok := (resp["song"]).(*models.Song)
 
