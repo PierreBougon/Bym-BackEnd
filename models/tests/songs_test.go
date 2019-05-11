@@ -75,27 +75,29 @@ var _ = Describe("Songs", func() {
 	})
 
 	Describe("Creating a Song", func() {
+		var (
+			song models.Song
+			resp map[string]interface{}
+			cleanSong = func() {
+				if song.ID > 0 {
+					db := models.GetDB()
+					db.Delete(&song)
+				}
+			}
+		)
+
+		AfterEach(cleanSong)
+
 		Context("With invalid data", func() {
 			It("should fail", func() {
-				resp := invalidSong.Create(mockAccount.ID)
+				song = invalidSong
+				resp := song.Create(mockAccount.ID)
 				Expect(resp["status"]).To(BeFalse(), resp["message"])
 			})
 		})
 		
 		Context("With valid data", func() {
-			var (
-				song models.Song
-			    resp map[string]interface{}
-			    cleanSong = func() {
-					if song.ID > 0 {
-						db := models.GetDB()
-						db.Delete(&song)
-					}
-				}
-			)
-
 			It("should succeed and return the created song", func() {
-				defer cleanSong()
 				song = models.Song{
 					Name: "New" + mockSong.Name,
 					PlaylistId: mockSong.PlaylistId,
