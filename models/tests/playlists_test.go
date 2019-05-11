@@ -12,6 +12,11 @@ var _ = Describe("Playlists", func() {
 		invalidPlaylist models.Playlist
 	)
 
+	var AssertValidationBehavior = func(t models.Table, success bool) {
+		resp, state := t.Validate()
+		Expect(state).To(Equal(success), "%s : %+v", resp["message"], t)
+	}
+
 	BeforeEach(func () {
 		invalidPlaylist = models.Playlist{
 			Name: "Mu",
@@ -22,25 +27,29 @@ var _ = Describe("Playlists", func() {
 
 	Describe("Validating Playlist data", func() {
 		Context("With an name shorter than 3 characters", func() {
-			wrongName := models.Playlist{
-				Name: invalidPlaylist.Name,
-				UserId: mockPlaylist.UserId,
-				Songs: mockPlaylist.Songs,
-			}
-			AssertValidationBehavior(&wrongName, false)
+			It("should be invalid", func() {
+				AssertValidationBehavior(&models.Playlist{
+					Name: invalidPlaylist.Name,
+					UserId: mockPlaylist.UserId,
+					Songs: mockPlaylist.Songs,
+				}, false)
+			})
 		})
 
 		Context("With an userId lesser than 1", func() {
-			wrongUser := models.Playlist{
-				Name: mockPlaylist.Name,
-				UserId: invalidPlaylist.UserId,
-				Songs: mockPlaylist.Songs,
-			}
-			AssertValidationBehavior(&wrongUser, false)
+			It("should be invalid", func() {
+				AssertValidationBehavior(&models.Playlist{
+					Name: mockPlaylist.Name,
+					UserId: invalidPlaylist.UserId,
+					Songs: mockPlaylist.Songs,
+				}, false)
+			})
 		})
 
 		Context("With correct data", func() {
-			AssertValidationBehavior(&mockPlaylist, true)
+			It("should be valid", func() {
+				AssertValidationBehavior(&mockPlaylist, true)
+			})
 		})
 	})
 
