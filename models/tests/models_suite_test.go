@@ -83,12 +83,6 @@ var _ = BeforeSuite(func() {
 })
 
 var AssertValidationBehavior = func(t models.Table, success bool) {
-	validity := "invalid"
-	if success {
-		validity = "valid"
-	}
-	It("should be " + validity, func() {
 		resp, state := t.Validate()
-		Expect(state).To(Equal(success), resp["message"])
-	})
+		Expect(state).To(Equal(success), "%s : %+v", resp["message"], t)
 }

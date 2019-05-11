@@ -16,11 +16,6 @@ var _ = Describe("Accounts", func() {
 		}
 	})
 
-	var AssertValidationBehavior = func(s *models.Account, success bool) {
-			resp, state := s.Validate()
-			Expect(state).To(Equal(success), "%s %+v", resp["message"], s)
-	}
-
 	Describe("Validating account data", func() {
 		Context("With a wrong email", func() {
 			It("should be invalid", func() {

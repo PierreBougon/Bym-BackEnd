@@ -12,11 +12,6 @@ var _ = Describe("Playlists", func() {
 		invalidPlaylist models.Playlist
 	)
 
-	var AssertValidationBehavior = func(t models.Table, success bool) {
-		resp, state := t.Validate()
-		Expect(state).To(Equal(success), "%s : %+v", resp["message"], t)
-	}
-
 	BeforeEach(func () {
 		invalidPlaylist = models.Playlist{
 			Name: "Mu",
