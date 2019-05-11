@@ -19,48 +19,57 @@ var _ = Describe("Songs", func() {
 		}
 	})
 
-	var assertSongValidationBehavior = func(s *models.Song, success bool) {
-		validity := "invalid"
-		if success {
-			validity = "valid"
-		}
-		It("should be " + validity, func() {
-			resp, state := s.Validate(mockAccount.ID)
-			Expect(state).To(Equal(success), "%s %+v", resp["message"], s)
-		})
+	var assertSongValidationBehavior = func(t *models.Song, accountId uint, success bool) {
+		resp, state := t.Validate(accountId)
+		Expect(state).To(Equal(success), "%s : %+v", resp["message"], t)
 	}
 
 	Describe("Validating Song data", func() {
 		Context("With correct data", func() {
-			assertSongValidationBehavior(&mockSong, true)
+			It("should be valid", func() {
+				assertSongValidationBehavior(&mockSong, mockAccount.ID,true)
+			})
 		})
 
 		Context("With an empty name", func() {
-			wrongName := models.Song{
-				Name: invalidSong.Name,
-				PlaylistId: mockSong.PlaylistId,
-				ExternalId: mockSong.ExternalId,
-			}
-			assertSongValidationBehavior(&wrongName, false)
+			It("should be invalid", func() {
+				assertSongValidationBehavior(&models.Song{
+					Name: invalidSong.Name,
+					PlaylistId: mockSong.PlaylistId,
+					ExternalId: mockSong.ExternalId,
+				}, mockAccount.ID, false)
+			})
 		})
 
 		Context("With a playlistId equal to 0", func() {
-			wrongId := models.Song{
-				Name: mockSong.Name,
-				PlaylistId: invalidSong.PlaylistId,
-				ExternalId: mockSong.ExternalId,
-			}
-			assertSongValidationBehavior(&wrongId, false)
+			It("should be invalid", func() {
+				assertSongValidationBehavior(&models.Song{
+					Name: mockSong.Name,
+					PlaylistId: invalidSong.PlaylistId,
+					ExternalId: mockSong.ExternalId,
+				}, mockAccount.ID, false)
+			})
+		})
+
+		Context("Which does not belong to the user", func() {
+			It("should be invalid", func() {
+				// mockSong.Playlist should belong to mockAccount
+				assertSongValidationBehavior(&models.Song{
+					Name: mockSong.Name,
+					PlaylistId: mockSong.PlaylistId,
+					ExternalId: mockSong.ExternalId,
+				}, mockAccount.ID + 1, false)
+			})
 		})
 
 		Context("With an empty externalId", func() {
-			wrongExternal := models.Song{
-				Name: mockSong.Name,
-				PlaylistId: mockSong.PlaylistId,
-				ExternalId: invalidSong.ExternalId,
-			}
-			assertSongValidationBehavior(&wrongExternal, false)
-
+			It("should be invalid", func() {
+				assertSongValidationBehavior(&models.Song{
+					Name: mockSong.Name,
+					PlaylistId: mockSong.PlaylistId,
+					ExternalId: invalidSong.ExternalId,
+				}, mockAccount.ID, false)
+			})
 		})
 
 	})
