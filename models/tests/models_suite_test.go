@@ -12,6 +12,7 @@ var (
 	mockAccount	models.Account
 	mockPlaylist models.Playlist
 	mockSong models.Song
+	mockVote models.Vote
 )
 
 func TestModels(t *testing.T) {
@@ -72,10 +73,27 @@ func loadMockSong() {
 	}
 }
 
+func loadMockVote() {
+	err := models.GetDB().
+		Table("votes").
+		Where("user_id = ? and song_id = ?", mockAccount.ID, mockSong.ID).
+		First(&mockVote).Error
+	if err != nil {
+		mockVote = models.Vote{
+			UpVote: true,
+			DownVote: false,
+			UserId: mockAccount.ID,
+			SongId: mockSong.ID,
+		}
+		models.GetDB().Save(mockVote)
+	}
+}
+
 func loadAllMockModels() {
 	loadMockAccount()
 	loadMockPlaylist()
 	loadMockSong()
+	loadMockVote()
 }
 
 var _ = BeforeSuite(func() {
