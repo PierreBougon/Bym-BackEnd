@@ -44,7 +44,6 @@ func getDbInfoFromEnv() (dbDialect string, dbUri string) {
 
 	if reg.MatchString(dbUrl) {
 		submatches := reg.FindStringSubmatch(dbUrl)
-		fmt.Println("match found", submatches)
 
 		dbDialect = submatches[1]
 		creds["user"] = submatches[2]
