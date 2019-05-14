@@ -27,20 +27,28 @@
 			"revisionTime": "2018-05-14T19:44:41Z"
 		},
 		{
+			"checksumSHA1": "/vOFpWVxFSz6spvdjByFbq4zgXY=",
 			"path": "github.com/hpcloud/tail/ratelimiter",
-			"revision": "a1dbeea552b7c8df4b542c66073e393de198a800"
+			"revision": "a1dbeea552b7c8df4b542c66073e393de198a800",
+			"revisionTime": "2018-05-14T19:44:41Z"
 		},
 		{
+			"checksumSHA1": "t4NGDWk2wdDw9HE75WZGY4shnbk=",
 			"path": "github.com/hpcloud/tail/util",
-			"revision": "a1dbeea552b7c8df4b542c66073e393de198a800"
+			"revision": "a1dbeea552b7c8df4b542c66073e393de198a800",
+			"revisionTime": "2018-05-14T19:44:41Z"
 		},
 		{
+			"checksumSHA1": "eJpebsm//tj7tL8Z3pTYrBoa7KM=",
 			"path": "github.com/hpcloud/tail/watch",
-			"revision": "a1dbeea552b7c8df4b542c66073e393de198a800"
+			"revision": "a1dbeea552b7c8df4b542c66073e393de198a800",
+			"revisionTime": "2018-05-14T19:44:41Z"
 		},
 		{
+			"checksumSHA1": "op7wvyXuY7hf6cXP2kIoW2CniuE=",
 			"path": "github.com/hpcloud/tail/winfile",
-			"revision": "a1dbeea552b7c8df4b542c66073e393de198a800"
+			"revision": "a1dbeea552b7c8df4b542c66073e393de198a800",
+			"revisionTime": "2018-05-14T19:44:41Z"
 		},
 		{
 			"checksumSHA1": "a2uATeQI5WnkJsLWkpm40a9C4EE=",
@@ -403,8 +411,16 @@
 			"revisionTime": "2018-12-15T16:57:46Z"
 		},
 		{
+			"checksumSHA1": "sLw/xqWE/2s+clAYVuD75S20qk0=",
+			"path": "gopkg.in/fsnotify/fsnotify.v1",
+			"revision": "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9",
+			"revisionTime": "2018-01-10T05:33:47Z"
+		},
+		{
+			"checksumSHA1": "NM0LJ2b2IyqMSe6VUBQclfNY0sA=",
 			"path": "gopkg.in/tomb.v1",
-			"revision": ""
+			"revision": "dd632973f1e7218eb1089048e0798ec9ae7dceb8",
+			"revisionTime": "2014-10-24T13:56:13Z"
 		},
 		{
 			"checksumSHA1": "oNqPrS2edE8peI3ah2INe379k8E=",
