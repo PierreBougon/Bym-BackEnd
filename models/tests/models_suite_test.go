@@ -11,6 +11,7 @@ import (
 var (
 	mockAccount	models.Account
 	mockPlaylist models.Playlist
+	mockSong models.Song
 )
 
 func TestModels(t *testing.T) {
@@ -18,48 +19,70 @@ func TestModels(t *testing.T) {
 	RunSpecs(t, "Models Suite")
 }
 
-func LoadMockAccount() {
-	ret := models.GetUser(6)
+func loadMockAccount() {
 	mockAccountPassword := "123456"
-	if ret == nil {
+	mockAccountEmail := "test@gmail.com"
+	err := models.GetDB().
+		Table("accounts").
+		Where("email = ?", mockAccountEmail).
+		First(&mockAccount).Error
+	if err != nil {
 		mockAccount = models.Account{
-			Email: "test@gmail.com",
+			Email: mockAccountEmail,
 			Password: string([]byte(mockAccountPassword)),
 			TokenVersion: 0,
 		}
 		mockAccount.Create()
-	} else {
-		mockAccount = *ret
 	}
 	mockAccount.Password = string([]byte(mockAccountPassword))
 }
 
 func loadMockPlaylist() {
-	ret := models.GetPlaylistById(15)
-	if ret == nil {
+	mockPlaylistName := "MockTest"
+	err := models.GetDB().
+		Table("playlists").
+		Where("name = ? and user_id = ?", mockPlaylistName, mockAccount.ID).
+		First(&mockPlaylist).Error
+	if err != nil {
 		mockPlaylist = models.Playlist{
-			Name: "MockTest",
+			Name: mockPlaylistName,
 			UserId: mockAccount.ID,
 			Songs: make([]models.Song, 0),
 		}
 		mockPlaylist.Create(mockAccount.ID)
-	} else {
-		mockPlaylist = *ret
 	}
 }
 
-var _ = BeforeSuite(func() {
-	LoadMockAccount()
+func loadMockSong() {
+	mockSongName := "MockSong"
+	err := models.GetDB().
+		Table("songs").
+		Where("name = ? and playlist_id = ?", mockSongName, mockPlaylist.ID).
+		First(&mockSong).Error
+	if err != nil {
+		mockSong = models.Song{
+			Name: mockSongName,
+			PlaylistId: mockPlaylist.ID,
+			ExternalId: "the id is a lie",
+			VoteDown: 42,
+			VoteUp: 43,
+			Score: 100,
+		}
+		mockSong.Create(mockAccount.ID)
+	}
+}
+
+func loadAllMockModels() {
+	loadMockAccount()
 	loadMockPlaylist()
+	loadMockSong()
+}
+
+var _ = BeforeSuite(func() {
+	loadAllMockModels()
 })
 
 var AssertValidationBehavior = func(t models.Table, success bool) {
-	validity := "invalid"
-	if success {
-		validity = "valid"
-	}
-	It("should be " + validity, func() {
 		resp, state := t.Validate()
-		Expect(state).To(Equal(success), resp["message"])
-	})
+		Expect(state).To(Equal(success), "%s : %+v", resp["message"], t)
 }
