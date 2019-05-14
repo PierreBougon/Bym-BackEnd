@@ -147,19 +147,28 @@ func GetSongRankingById(songid uint) *Ranking {
 
 func RefreshSongVotes(songid uint) {
 	//TODO : do not call this method directly create a thread to handle the refresh in another thread with a correct delay to not make 100 refresh/s for now just use it as it is
-	//votes := make([]*Vote, 0)
-	upVotes := 0
-	downVotes := 0
-	err1 := GetDB().Table("votes").Where("song_id = ? AND up_vote = ?", songid, true).Count(&upVotes).Error
-	err2 := GetDB().Table("votes").Where("song_id = ? AND down_vote = ?", songid, true).Count(&downVotes).Error
-	if err1 != nil || err2 != nil {
-		return
-	}
 	song := Song{}
 	err := db.Table("songs").First(&song, songid).Error
 	if err != nil {
 		return
 	}
+
+	votes := make([]*Vote, 0)
+	err = GetDB().Table("votes").Find(votes, "song_id = ?", songid).Error
+	if err != nil {
+		return
+	}
+
+	upVotes := 0
+	downVotes := 0
+	for _, vote := range votes {
+		if vote.UpVote {
+			upVotes++
+		} else {
+			downVotes++
+		}
+	}
+
 	song.VoteUp = upVotes
 	song.VoteDown = downVotes
 	song.Score = upVotes*100 - downVotes*100
