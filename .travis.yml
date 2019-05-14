@@ -8,7 +8,7 @@ install:
   - govendor install +vendor,^program
   - export PATH=$PATH:$HOME/gopath/bin
 
-script: ginkgo --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race --compilers=2 -covermode=atomic -coverpkg ./... ./...
+script: ginkgo --failOnPending=false --noisyPendings=false --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race --compilers=2 -covermode=atomic -coverpkg ./... ./...
 
 after_success:
   - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
