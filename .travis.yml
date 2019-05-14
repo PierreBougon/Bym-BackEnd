@@ -14,6 +14,15 @@ install:
   - govendor sync
   - export PATH=$PATH:$HOME/gopath/bin
 
+services:
+  - postgresql
+
+before_script:
+  - psql -c 'create database travis_ci_test;' -U postgres
+
+env:
+  - DATABASE_URL="postgres://postgres:@localhost:5432/travis_ci_test"
+
 script: ginkgo --failOnPending=false --noisyPendings=false --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race --compilers=2 -covermode=atomic -coverpkg ./... ./...
 
 after_success:
