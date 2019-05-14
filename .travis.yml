@@ -5,7 +5,7 @@ go:
 install:
   - go get -u github.com/kardianos/govendor
   - govendor sync
-  - go install github.com/onsi/ginkgo/ginkgo
+  - govendor install +vendor,^program
   - export PATH=$PATH:$HOME/gopath/bin
 
 script: ginkgo --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race --compilers=2 -covermode=atomic -coverpkg ./... ./...
