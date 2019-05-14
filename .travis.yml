@@ -7,4 +7,13 @@ install:
   - export PATH=$PATH:$HOME/gopath/bin
   - govendor sync
 
+after_success:
+  - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
+  - chmod +x send.sh
+  - ./send.sh success $WEBHOOK_URL
+after_failure:
+  - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
+  - chmod +x send.sh
+  - ./send.sh failure $WEBHOOK_URL
+
 script: ginkgo --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race --compilers=2 -covermode=atomic -coverpkg ./... ./...
