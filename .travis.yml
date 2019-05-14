@@ -2,10 +2,16 @@ language: go
 go:
   - "1.11.5"
 
+branches:
+  only:
+    - master
+    - develop
+    - fix_travis_yml
+
 install:
   - go get -u github.com/kardianos/govendor
+  - go get github.com/onsi/ginkgo/ginkgo
   - govendor sync
-  - govendor install +vendor,^program
   - export PATH=$PATH:$HOME/gopath/bin
 
 script: ginkgo --failOnPending=false --noisyPendings=false --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race --compilers=2 -covermode=atomic -coverpkg ./... ./...
