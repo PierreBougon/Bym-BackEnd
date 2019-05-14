@@ -4,6 +4,7 @@ go:
 
 install:
   - go get -u github.com/kardianos/govendor
+  - go get -u github.com/onsi/ginkgo
   - govendor sync
   - export PATH=$PATH:$HOME/gopath/bin
 
