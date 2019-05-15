@@ -34,14 +34,25 @@ func GetVotesBySongId(songid uint) []*Vote {
 }
 
 func updateVoteOnSong(songid uint, user uint, upVote bool) map[string]interface{} {
+	err := GetDB().Table("songs").Find(&Song{}, "id = ?", songid).Error
+	if err != nil {
+		return u.Message(false, "Request failed, connection error or songId does not exist")
+	}
+
+	err = GetDB().Table("accounts").Find(&Account{}, "id = ?", user).Error
+	if err != nil {
+		return u.Message(false, "Request failed, connection error or user does not exist")
+	}
+
 	vote := Vote{}
 	res := GetDB().Table("votes").
 		Find(&vote, "song_id = ? AND user_id = ?", songid, user)
+	errNbr := len(res.GetErrors())
+	notFound := res.RecordNotFound()
 	// Database failure: Only one error happened which is not RecordNotFound or other error(s) happened
-	if  (len(res.GetErrors()) == 1 && !res.RecordNotFound()) ||
-		(len(res.GetErrors()) > 0) {
+	if  (errNbr > 1 && notFound) ||	(errNbr > 0 && !notFound) {
 		return u.Message(false, "Request failed, connection error")
-	// If Vote did not exist, fill the data of the new one
+		// If Vote did not exist, fill the data of the new one
 	} else if res.RecordNotFound() {
 		vote.UserId = user
 		vote.SongId = songid
