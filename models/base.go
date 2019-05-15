@@ -39,12 +39,11 @@ func migrate() {
 
 func getDbInfoFromEnv() (dbDialect string, dbUri string) {
 	dbUrl := os.Getenv("DATABASE_URL")
-	reg := regexp.MustCompile("^(postgres|mysql|sqlite|mssql)://(.+?):(.+?)@(.+?):([0-9]+)/(.+)$")
+	reg := regexp.MustCompile("^(postgres|mysql|sqlite|mssql)://(.+?):(.*?)@(.+?):([0-9]+)/(.+)$")
 	creds := make(map[string]string, 0)
 
 	if reg.MatchString(dbUrl) {
 		submatches := reg.FindStringSubmatch(dbUrl)
-		fmt.Println("match found", submatches)
 
 		dbDialect = submatches[1]
 		creds["user"] = submatches[2]
