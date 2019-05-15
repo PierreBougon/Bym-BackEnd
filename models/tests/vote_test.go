@@ -42,8 +42,8 @@ var _ = Describe("Vote", func() {
 				var t interface{}
 
 				t = models.GetVotesBySongId(mockSong.ID)
-				res, _ := t.([]*models.Vote)
-				// Expect(ok).To(BeTrue())
+				res, ok := t.([]*models.Vote)
+				Expect(ok).To(BeTrue())
 				for _, vote := range res {
 					fmt.Println(vote)
 					Expect(vote).ToNot(Equal(models.Vote{}))
@@ -52,6 +52,87 @@ var _ = Describe("Vote", func() {
 		})
 	})
 
+	Describe("Updating the vote on a song", func() {
+		var switchMockVoteValueToCorrespondTo = func(vote models.Vote, upVote bool) {
+			models.GetDB().Find(&vote, vote.ID)
+			if vote.UpVote != upVote {
+				vote.UpVote = upVote
+				vote.DownVote = !upVote
+				models.GetDB().Save(vote)
+			}
+		}
 
+		Context("which does not exist", func() {
+			It("should fail with an upVote", func() {
+				res := models.UpVoteSong(0, mockAccount.ID)
+				Expect(res["status"]).To(BeFalse())
+			})
+
+			It("should fail with an downVote", func() {
+				res := models.DownVoteSong(0, mockAccount.ID)
+				Expect(res["status"]).To(BeFalse())
+			})
+		})
+
+		Context("which exist but already has a corresponding vote of the user on", func() {
+			It("should succeed with an upVote", func() {
+				switchMockVoteValueToCorrespondTo(mockVote, true)
+				res := models.UpVoteSong(mockSong.ID, mockAccount.ID)
+				Expect(res["status"]).To(BeTrue())
+			})
+
+			It("should succeed with an downVote", func() {
+				switchMockVoteValueToCorrespondTo(mockVote, false)
+				res := models.DownVoteSong(mockSong.ID, mockAccount.ID)
+				Expect(res["status"]).To(BeTrue())
+			})
+		})
+
+		Context("on which there was no vote beforehand", func() {
+			var vote models.Vote
+
+			var fetchVote = func(v *models.Vote) bool {
+				res := models.GetDB().
+					Find(v, "user_id = ? and song_id = ?", v.UserId, v.SongId)
+				if !res.RecordNotFound() {
+					return true
+				} else if res.Error != nil {
+					panic("connection error")
+				}
+				return false
+			}
+
+			BeforeEach(func() {
+				vote = models.Vote{
+					UserId: mockAccountVoter.ID,
+					SongId: mockSong.ID,
+				}
+			})
+
+			AfterEach(func() {
+				if fetchVote(&vote) {
+					models.GetDB().Delete(&vote)
+				}
+			})
+
+			It("should create a new Vote with an upVote", func() {
+				res := models.UpVoteSong(mockSong.ID, mockAccountVoter.ID)
+				Expect(res["status"]).To(BeTrue())
+
+				found := fetchVote(&vote)
+				Expect(found).To(BeTrue(), "The upVote was not created")
+				Expect(vote.UpVote).To(BeTrue())
+			})
+
+			It("should create a new Vote with an downVote", func() {
+				res := models.DownVoteSong(mockSong.ID, mockAccountVoter.ID)
+				Expect(res["status"]).To(BeTrue())
+
+				found := fetchVote(&vote)
+				Expect(found).To(BeTrue(), "The downVote was not created")
+				Expect(vote.DownVote).To(BeTrue())
+			})
+		})
+	})
 
 })

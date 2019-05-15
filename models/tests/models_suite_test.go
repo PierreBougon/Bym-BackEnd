@@ -10,6 +10,7 @@ import (
 
 var (
 	mockAccount	models.Account
+	mockAccountVoter models.Account
 	mockPlaylist models.Playlist
 	mockSong models.Song
 	mockVote models.Vote
@@ -20,22 +21,30 @@ func TestModels(t *testing.T) {
 	RunSpecs(t, "Models Suite")
 }
 
-func loadMockAccount() {
+var _ = BeforeSuite(func() {
+	loadAllMockModels()
+})
+
+var AssertValidationBehavior = func(t models.Table, success bool) {
+	resp, state := t.Validate()
+	Expect(state).To(Equal(success), "%s : %+v", resp["message"], t)
+}
+
+func loadMockAccount(account *models.Account, email string) {
 	mockAccountPassword := "123456"
-	mockAccountEmail := "test@gmail.com"
 	err := models.GetDB().
 		Table("accounts").
-		Where("email = ?", mockAccountEmail).
-		First(&mockAccount).Error
+		Where("email = ?", email).
+		First(account).Error
 	if err != nil {
-		mockAccount = models.Account{
-			Email: mockAccountEmail,
+		account = &models.Account{
+			Email: email,
 			Password: string([]byte(mockAccountPassword)),
 			TokenVersion: 0,
 		}
-		mockAccount.Create()
+		account.Create()
 	}
-	mockAccount.Password = string([]byte(mockAccountPassword))
+	account.Password = string([]byte(mockAccountPassword))
 }
 
 func loadMockPlaylist() {
@@ -85,22 +94,14 @@ func loadMockVote() {
 			UserId: mockAccount.ID,
 			SongId: mockSong.ID,
 		}
-		models.GetDB().Save(mockVote)
+		models.GetDB().Save(&mockVote)
 	}
 }
 
 func loadAllMockModels() {
-	loadMockAccount()
+	loadMockAccount(&mockAccount, "test@gmail.com")
+	loadMockAccount(&mockAccountVoter, "VoterTest@gmail.com")
 	loadMockPlaylist()
 	loadMockSong()
 	loadMockVote()
-}
-
-var _ = BeforeSuite(func() {
-	loadAllMockModels()
-})
-
-var AssertValidationBehavior = func(t models.Table, success bool) {
-		resp, state := t.Validate()
-		Expect(state).To(Equal(success), "%s : %+v", resp["message"], t)
 }
