@@ -154,7 +154,7 @@ func RefreshSongVotes(songid uint) {
 	}
 
 	votes := make([]*Vote, 0)
-	err = GetDB().Table("votes").Find(votes, "song_id = ?", songid).Error
+	err = GetDB().Table("votes").Find(&votes, "song_id = ?", songid).Error
 	if err != nil {
 		return
 	}
