@@ -57,7 +57,7 @@ func (song *Song) Create(user uint) map[string]interface{} {
 	if song.ID <= 0 {
 		return u.Message(false, "Failed to create song, connection error.")
 	}
-	updatePlaylistSoundCount(song.PlaylistId, 1)
+	updatePlaylistSoundCount(user, song.PlaylistId, 1)
 	response := u.Message(true, "song has been created")
 	response["song"] = song
 	return response
