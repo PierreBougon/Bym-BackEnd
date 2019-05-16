@@ -39,7 +39,7 @@ var GetPlaylists = func(w http.ResponseWriter, r *http.Request) {
 		user = r.Context().Value("user").(uint)
 	}
 
-	data := models.GetPlaylists(uint(user))
+	data := models.GetPlaylistsByUser(uint(user))
 	resp := u.Message(true, "success")
 	resp["playlists"] = data
 	u.Respond(w, resp)
@@ -54,7 +54,7 @@ var GetPlaylist = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.GetPlaylist(uint(id))
+	data := models.GetPlaylistById(uint(id))
 	if data == nil {
 		u.RespondBadRequest(w)
 		return

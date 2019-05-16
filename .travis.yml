@@ -1,0 +1,35 @@
+language: go
+go:
+  - "1.11.5"
+
+branches:
+  only:
+    - master
+    - develop
+    - fix_travis_yml
+
+install:
+  - go get -u github.com/kardianos/govendor
+  - go get github.com/onsi/ginkgo/ginkgo
+  - govendor sync
+  - export PATH=$PATH:$HOME/gopath/bin
+
+services:
+  - postgresql
+
+before_script:
+  - psql -c 'create database travis_ci_test;' -U postgres
+
+env:
+  - DATABASE_URL=postgres://postgres:@localhost:5432/travis_ci_test
+
+script: ginkgo --failOnPending=false --noisyPendings=false --randomizeAllSpecs --randomizeSuites --cover --trace --race --compilers=2 -covermode=atomic -coverpkg ./... ./...
+
+after_success:
+  - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
+  - chmod +x send.sh
+  - ./send.sh success $WEBHOOK_URL
+after_failure:
+  - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
+  - chmod +x send.sh
+  - ./send.sh failure $WEBHOOK_URL

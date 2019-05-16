@@ -23,3 +23,9 @@ func RespondBadRequest(w http.ResponseWriter) {
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(Message(false, "Invalid request"))
 }
+
+func RespondBadRequestWithMessage(w http.ResponseWriter, message string) {
+	w.WriteHeader(http.StatusBadRequest)
+	w.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(Message(false, message))
+}
