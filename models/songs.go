@@ -67,6 +67,7 @@ func GetSongs(playlist uint) []*Song {
 
 	songs := make([]*Song, 0)
 	err := GetDB().Table("songs").Where("playlist_id = ?", playlist).Find(&songs).Error
+	fmt.Println(err)
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -98,6 +99,7 @@ func (song *Song) DeleteSong(user uint, songId uint) map[string]interface{} {
 		return u.Message(false, "Invalid song, you may not own this playlist")
 	}
 	db.Delete(&retSong)
+	updatePlaylistSoundCount(user, song.PlaylistId, -1)
 	return u.Message(true, "Song successfully deleted")
 }
 
