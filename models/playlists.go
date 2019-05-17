@@ -9,9 +9,10 @@ import (
 
 type Playlist struct {
 	gorm.Model
-	Name   string `json:"name"`
-	UserId uint   `json:"user_id"`
-	Songs  []Song `gorm:"ForeignKey:PlaylistId"`
+	Name        string `json:"name"`
+	UserId      uint   `json:"user_id"`
+	SongsNumber int    `json:"songs_number"`
+	Songs       []Song `gorm:"ForeignKey:PlaylistId"`
 }
 
 func (playlist *Playlist) Validate() (map[string]interface{}, bool) {
@@ -27,6 +28,7 @@ func (playlist *Playlist) Validate() (map[string]interface{}, bool) {
 func (playlist *Playlist) Create(user uint) map[string]interface{} {
 
 	playlist.UserId = user
+	playlist.SongsNumber = 0
 	if resp, ok := playlist.Validate(); !ok {
 		return resp
 	}
@@ -70,6 +72,17 @@ func (playlist *Playlist) UpdatePlaylist(user uint, playlistId uint, newPlaylist
 		return u.Message(false, "Invalid playlist, you may not own this playlist")
 	}
 	retPlaylist.Name = newPlaylist.Name
+	db.Save(&retPlaylist)
+	return u.Message(true, "Playlist successfully updated")
+}
+
+func updatePlaylistSoundCount(user uint, playlistId uint, countModifier int) map[string]interface{} {
+	retPlaylist := &Playlist{}
+	err := db.Where(&Playlist{UserId: user}).First(&retPlaylist, playlistId).Error
+	if err != nil {
+		return u.Message(false, "Invalid playlist, you may not own this playlist")
+	}
+	retPlaylist.SongsNumber += countModifier
 	db.Save(&retPlaylist)
 	return u.Message(true, "Playlist successfully updated")
 }

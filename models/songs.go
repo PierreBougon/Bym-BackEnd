@@ -37,8 +37,8 @@ func (song *Song) Validate(user uint) (map[string]interface{}, bool) {
 	}
 	playlist := &Playlist{}
 	err := db.First(playlist, song.PlaylistId).Error
-	if err != nil || playlist.UserId != user {
-		return u.Message(false, "Invalid song, you may not own this playlist or playlist doesn't exist"), false
+	if err != nil /*|| playlist.UserId != user */ {
+		return u.Message(false, "Invalid song, playlist may not be created"), false
 	}
 	if song.ExternalId == "" {
 		return u.Message(false, "Invalid external id"), false
@@ -57,7 +57,7 @@ func (song *Song) Create(user uint) map[string]interface{} {
 	if song.ID <= 0 {
 		return u.Message(false, "Failed to create song, connection error.")
 	}
-
+	updatePlaylistSoundCount(user, song.PlaylistId, 1)
 	response := u.Message(true, "song has been created")
 	response["song"] = song
 	return response
@@ -67,6 +67,7 @@ func GetSongs(playlist uint) []*Song {
 
 	songs := make([]*Song, 0)
 	err := GetDB().Table("songs").Where("playlist_id = ?", playlist).Find(&songs).Error
+	fmt.Println(err)
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -80,8 +81,8 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]i
 	err := db.First(&retSong, songId).Error
 	playlist := &Playlist{}
 	db.First(playlist, retSong.PlaylistId)
-	if err != nil || playlist.UserId != user {
-		return u.Message(false, "Invalid song, you may not own this playlist")
+	if err != nil /*|| playlist.UserId != user*/ {
+		return u.Message(false, "Invalid song")
 	}
 	//if (retSong.PlaylistId) TODO : very ownership
 	retSong.Name = newSong.Name
@@ -98,6 +99,7 @@ func (song *Song) DeleteSong(user uint, songId uint) map[string]interface{} {
 		return u.Message(false, "Invalid song, you may not own this playlist")
 	}
 	db.Delete(&retSong)
+	updatePlaylistSoundCount(user, song.PlaylistId, -1)
 	return u.Message(true, "Song successfully deleted")
 }
 

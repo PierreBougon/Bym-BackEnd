@@ -49,6 +49,10 @@ var GetSongs = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := models.GetSongs(uint(plistid))
+	if data == nil {
+		u.RespondBadRequestWithMessage(w, "Invalid request, playlist Id doesn't match with any playlist")
+		return
+	}
 	resp := u.Message(true, "success")
 	resp["songs"] = data
 	u.Respond(w, resp)
