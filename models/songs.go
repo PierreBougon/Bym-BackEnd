@@ -37,8 +37,8 @@ func (song *Song) Validate(user uint) (map[string]interface{}, bool) {
 	}
 	playlist := &Playlist{}
 	err := db.First(playlist, song.PlaylistId).Error
-	if err != nil || playlist.UserId != user {
-		return u.Message(false, "Invalid song, you may not own this playlist or playlist doesn't exist"), false
+	if err != nil /*|| playlist.UserId != user */ {
+		return u.Message(false, "Invalid song, playlist may not be created"), false
 	}
 	if song.ExternalId == "" {
 		return u.Message(false, "Invalid external id"), false
@@ -81,8 +81,8 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]i
 	err := db.First(&retSong, songId).Error
 	playlist := &Playlist{}
 	db.First(playlist, retSong.PlaylistId)
-	if err != nil || playlist.UserId != user {
-		return u.Message(false, "Invalid song, you may not own this playlist")
+	if err != nil /*|| playlist.UserId != user*/ {
+		return u.Message(false, "Invalid song")
 	}
 	//if (retSong.PlaylistId) TODO : very ownership
 	retSong.Name = newSong.Name
