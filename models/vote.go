@@ -33,7 +33,7 @@ func GetVotesBySongId(songid uint) []*Vote {
 	return votes
 }
 
-func updateVoteOnSong(songid uint, user uint, upVote bool) map[string]interface{} {
+func updateVote(songid uint, user uint, upVote bool) map[string]interface{} {
 	err := GetDB().Table("songs").Find(&Song{}, "id = ?", songid).Error
 	if err != nil {
 		return u.Message(false, "Request failed, connection error or songId does not exist")
@@ -70,9 +70,9 @@ func updateVoteOnSong(songid uint, user uint, upVote bool) map[string]interface{
 }
 
 func UpVoteSong(songid uint, user uint) map[string]interface{} {
-	return updateVoteOnSong(songid, user, true)
+	return updateVote(songid, user, true)
 }
 
 func DownVoteSong(songid uint, user uint) map[string]interface{} {
-	return updateVoteOnSong(songid, user, false)
+	return updateVote(songid, user, false)
 }
