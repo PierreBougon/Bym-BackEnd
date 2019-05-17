@@ -3,6 +3,10 @@ go:
   - "1.11.5"
 addons:
   postgresql: "10.6"
+  apt:
+    packages:
+      - postgresql-10
+      - postgresql-client-10
 
 branches:
   only:
@@ -23,7 +27,9 @@ before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
 
 env:
-  - DATABASE_URL=postgres://postgres:@localhost:5432/travis_ci_test
+  - global:
+      - PGPORT=5433
+      - DATABASE_URL=postgres://postgres:@localhost:5432/travis_ci_test
 
 script: ginkgo --failOnPending=false --noisyPendings=false --randomizeAllSpecs --randomizeSuites --cover --trace --race --compilers=2 -covermode=atomic -coverpkg ./... ./...
 
