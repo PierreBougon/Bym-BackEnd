@@ -16,7 +16,7 @@ type Song struct {
 	VoteUp     int    `json:"vote_up"`
 	VoteDown   int    `json:"vote_down"`
 	Score      int    `json:"score"`
-
+	Status     string `json:"status"`
 	// We can add image + infos etc
 }
 
@@ -48,6 +48,7 @@ func (song *Song) Validate(user uint) (map[string]interface{}, bool) {
 
 func (song *Song) Create(user uint) map[string]interface{} {
 
+	song.Status = "NONE"
 	if resp, ok := song.Validate(user); !ok {
 		return resp
 	}
@@ -85,9 +86,21 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]i
 		return u.Message(false, "Invalid song")
 	}
 	//if (retSong.PlaylistId) TODO : very ownership
-	retSong.Name = newSong.Name
+	if newSong.Name != "" {
+		retSong.Name = newSong.Name
+	}
+	if newSong.Status != "" && isStatusValid(newSong.Status) {
+		retSong.Status = newSong.Status
+	}
 	db.Save(&retSong)
 	return u.Message(true, "Song successfully updated")
+}
+
+func isStatusValid(status string) bool {
+	if status == "NONE" || status == "PLAYING" || status == "STOP" || status == "PAUSE" {
+		return true
+	}
+	return false
 }
 
 func (song *Song) DeleteSong(user uint, songId uint) map[string]interface{} {
