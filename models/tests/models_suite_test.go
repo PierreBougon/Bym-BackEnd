@@ -77,6 +77,7 @@ func loadMockSong() {
 			VoteDown: 42,
 			VoteUp: 43,
 			Score: 100,
+			Status: "None",
 		}
 		mockSong.Create(mockAccount.ID)
 	}
