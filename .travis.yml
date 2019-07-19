@@ -1,8 +1,8 @@
 language: go
 go:
-  - "1.11.5"
+  - "1.12"
 addons:
-  postgresql: "10"
+  postgresql: "10.6"
 
 branches:
   only:
