@@ -1,7 +1,6 @@
 package models_test
 
 import (
-	"fmt"
 	"github.com/PierreBougon/Bym-BackEnd/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -45,7 +44,6 @@ var _ = Describe("Vote", func() {
 				res, ok := t.([]*models.Vote)
 				Expect(ok).To(BeTrue())
 				for _, vote := range res {
-					fmt.Println(vote)
 					Expect(vote).ToNot(Equal(models.Vote{}))
 				}
 			})
