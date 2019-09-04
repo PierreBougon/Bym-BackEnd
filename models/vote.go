@@ -39,11 +39,6 @@ func updateVote(songid uint, user uint, upVote bool) map[string]interface{} {
 		return u.Message(false, "Request failed, connection error or songId does not exist")
 	}
 
-	err = GetDB().Table("accounts").Find(&Account{}, "id = ?", user).Error
-	if err != nil {
-		return u.Message(false, "Request failed, connection error or user does not exist")
-	}
-
 	vote := Vote{}
 	res := GetDB().Table("votes").
 		Find(&vote, "song_id = ? AND user_id = ?", songid, user)
