@@ -68,8 +68,6 @@ func main() {
 	vote.HandleFunc("", controllers.GetVote).Methods("GET")
 	//	vote.HandleFunc("/{id}", controllers.DeleteSong).Methods("DELETE")
 
-	router.Use(app.JwtAuthentication)
-
 	err := http.ListenAndServe(":"+port, router) //Launch the app, visit localhost:8000/api
 	if err != nil {
 		fmt.Print(err)
