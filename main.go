@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/PierreBougon/Bym-BackEnd/app"
 	"github.com/PierreBougon/Bym-BackEnd/controllers"
+	"github.com/moesif/moesifmiddleware-go"
 
 	"fmt"
 	"net/http"
@@ -11,6 +12,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func middlewareWrapper(h http.Handler) http.Handler {
+	var moesifOptions = map[string]interface{} {
+		"Application_Id": "eyJhcHAiOiIyMjM6OTAiLCJ2ZXIiOiIyLjAiLCJvcmciOiI1NzM6MTEwIiwiaWF0IjoxNTY4NDE5MjAwfQ.rveJnIPgD60qf2w4Z_9VnKElLyrU5Mx0wnQv9gVYTko",
+		"Log_Body": true,
+	}
+	return moesifmiddleware.MoesifMiddleware(h, moesifOptions)
+}
+
 func main() {
 
 	router := mux.NewRouter()
@@ -18,11 +27,11 @@ func main() {
 
 	port := os.Getenv("PORT") //Get port from .env file, we did not specify any port so this should return an empty string when tested locally
 	if port == "" {
-		port = "443" //localhost
+		port = "443"
 	}
 
 	fmt.Println(port)
-
+	router.Use(middlewareWrapper)
 	// Auth
 	router.HandleFunc("/api/user/new", controllers.CreateAccount).Methods("POST")
 	router.HandleFunc("/api/user/login", controllers.Authenticate).Methods("POST")

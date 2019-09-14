@@ -27,18 +27,22 @@
 			"revisionTime": "2018-05-14T19:44:41Z"
 		},
 		{
+			"checksumSHA1": "/vOFpWVxFSz6spvdjByFbq4zgXY=",
 			"path": "github.com/hpcloud/tail/ratelimiter",
 			"revision": "a1dbeea552b7c8df4b542c66073e393de198a800"
 		},
 		{
+			"checksumSHA1": "t4NGDWk2wdDw9HE75WZGY4shnbk=",
 			"path": "github.com/hpcloud/tail/util",
 			"revision": "a1dbeea552b7c8df4b542c66073e393de198a800"
 		},
 		{
+			"checksumSHA1": "eJpebsm//tj7tL8Z3pTYrBoa7KM=",
 			"path": "github.com/hpcloud/tail/watch",
 			"revision": "a1dbeea552b7c8df4b542c66073e393de198a800"
 		},
 		{
+			"checksumSHA1": "op7wvyXuY7hf6cXP2kIoW2CniuE=",
 			"path": "github.com/hpcloud/tail/winfile",
 			"revision": "a1dbeea552b7c8df4b542c66073e393de198a800"
 		},
@@ -83,6 +87,24 @@
 			"path": "github.com/lib/pq/oid",
 			"revision": "9eb73efc1fcc404148b56765b0d3f61d9a5ef8ee",
 			"revisionTime": "2018-10-16T16:26:27Z"
+		},
+		{
+			"checksumSHA1": "+kYcVr1ygOkI9XpiJSDvpnXIUC0=",
+			"path": "github.com/moesif/moesifapi-go",
+			"revision": "43013877720dc4f645abefa89c2bde5993a9a002",
+			"revisionTime": "2019-08-22T17:33:34Z"
+		},
+		{
+			"checksumSHA1": "USqjXF9H6PSwl8SrPfNdJuTct+M=",
+			"path": "github.com/moesif/moesifapi-go/models",
+			"revision": "43013877720dc4f645abefa89c2bde5993a9a002",
+			"revisionTime": "2019-08-22T17:33:34Z"
+		},
+		{
+			"checksumSHA1": "fHxBc4l6HqPFhlKym8B5hEi8uHc=",
+			"path": "github.com/moesif/moesifmiddleware-go",
+			"revision": "6bc4d036d5cc95bf69c573accd02d024295b58f3",
+			"revisionTime": "2019-08-29T02:41:07Z"
 		},
 		{
 			"checksumSHA1": "PkNHxsc33JYGni18XV+lbb7pqiE=",
@@ -275,6 +297,18 @@
 			"path": "golang.org/x/crypto/blowfish",
 			"revision": "74369b46fc6756741c016591724fd1cb8e26845f",
 			"revisionTime": "2019-02-10T12:59:10Z"
+		},
+		{
+			"checksumSHA1": "GtamqiJoL7PGHsN454AoffBFMa8=",
+			"path": "golang.org/x/net/context",
+			"revision": "24e19bdeb0f2d062d8e2640d50a7aaf2a7f80e7a",
+			"revisionTime": "2019-06-07T04:56:05Z"
+		},
+		{
+			"checksumSHA1": "aFpql3G+Nw8zkzfqLWQJNZC8pu0=",
+			"path": "golang.org/x/net/context/ctxhttp",
+			"revision": "24e19bdeb0f2d062d8e2640d50a7aaf2a7f80e7a",
+			"revisionTime": "2019-06-07T04:56:05Z"
 		},
 		{
 			"checksumSHA1": "Vj7GeUWk9nB69/MbXIbzm7fmKn4=",
