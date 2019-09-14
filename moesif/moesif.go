@@ -6,9 +6,6 @@ import (
 	"os"
 )
 
-
-var options = fetchMoesifOptions()
-
 func fetchMoesifOptions() map[string]interface{}{
 	appId := os.Getenv("moesif_app_id")
 
@@ -18,18 +15,14 @@ func fetchMoesifOptions() map[string]interface{}{
 	return map[string]interface{} {
 		"Application_Id": appId,
 		"Log_Body": true,
+		"Capture_Outoing_Requests": true,
 	}
 }
 
 func MiddlewareWrapper(h http.Handler) http.Handler {
+	options := fetchMoesifOptions()
 	if options == nil {
 		return h
 	}
 	return moesifmiddleware.MoesifMiddleware(h, options)
-}
-
-func CatchOutgoingCalls() {
-	if options != nil {
-		moesifmiddleware.StartCaptureOutgoing(options)
-	}
 }
