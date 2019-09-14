@@ -6,7 +6,10 @@ import (
 	"os"
 )
 
-func moesifOptions() map[string]interface{}{
+
+var options = fetchMoesifOptions()
+
+func fetchMoesifOptions() map[string]interface{}{
 	appId := os.Getenv("moesif_app_id")
 
 	if appId == "" {
@@ -19,9 +22,14 @@ func moesifOptions() map[string]interface{}{
 }
 
 func MiddlewareWrapper(h http.Handler) http.Handler {
-	options := moesifOptions()
 	if options == nil {
 		return h
 	}
 	return moesifmiddleware.MoesifMiddleware(h, options)
+}
+
+func CatchOutgoingCalls() {
+	if options != nil {
+		moesifmiddleware.StartCaptureOutgoing(options)
+	}
 }

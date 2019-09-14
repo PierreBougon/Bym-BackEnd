@@ -27,7 +27,8 @@ func main() {
 	// API
 	api := router.PathPrefix("/api").Subrouter()
 	api.Use(moesif.MiddlewareWrapper)
-
+	moesif.CatchOutgoingCalls()
+	
 	//		Auth
 	auth := api.PathPrefix("/user").Subrouter()
 	auth.HandleFunc("/new", controllers.CreateAccount).Methods("POST")
