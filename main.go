@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/PierreBougon/Bym-BackEnd/app"
 	"github.com/PierreBougon/Bym-BackEnd/controllers"
-	"github.com/moesif/moesifmiddleware-go"
+	"github.com/PierreBougon/Bym-BackEnd/moesif"
 
 	"fmt"
 	"net/http"
@@ -11,14 +11,6 @@ import (
 
 	"github.com/gorilla/mux"
 )
-
-func middlewareWrapper(h http.Handler) http.Handler {
-	var moesifOptions = map[string]interface{} {
-		"Application_Id": "eyJhcHAiOiIyMjM6OTAiLCJ2ZXIiOiIyLjAiLCJvcmciOiI1NzM6MTEwIiwiaWF0IjoxNTY4NDE5MjAwfQ.rveJnIPgD60qf2w4Z_9VnKElLyrU5Mx0wnQv9gVYTko",
-		"Log_Body": true,
-	}
-	return moesifmiddleware.MoesifMiddleware(h, moesifOptions)
-}
 
 func main() {
 
@@ -34,7 +26,7 @@ func main() {
 
 	// API
 	api := router.PathPrefix("/api").Subrouter()
-	api.Use(middlewareWrapper)
+	api.Use(moesif.MiddlewareWrapper)
 
 	//		Auth
 	auth := api.PathPrefix("/user").Subrouter()
