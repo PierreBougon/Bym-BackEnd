@@ -93,6 +93,24 @@
 			"revisionTime": "2018-10-16T16:26:27Z"
 		},
 		{
+			"checksumSHA1": "+kYcVr1ygOkI9XpiJSDvpnXIUC0=",
+			"path": "github.com/moesif/moesifapi-go",
+			"revision": "43013877720dc4f645abefa89c2bde5993a9a002",
+			"revisionTime": "2019-08-22T17:33:34Z"
+		},
+		{
+			"checksumSHA1": "USqjXF9H6PSwl8SrPfNdJuTct+M=",
+			"path": "github.com/moesif/moesifapi-go/models",
+			"revision": "43013877720dc4f645abefa89c2bde5993a9a002",
+			"revisionTime": "2019-08-22T17:33:34Z"
+		},
+		{
+			"checksumSHA1": "fHxBc4l6HqPFhlKym8B5hEi8uHc=",
+			"path": "github.com/moesif/moesifmiddleware-go",
+			"revision": "6bc4d036d5cc95bf69c573accd02d024295b58f3",
+			"revisionTime": "2019-08-29T02:41:07Z"
+		},
+		{
 			"checksumSHA1": "PkNHxsc33JYGni18XV+lbb7pqiE=",
 			"path": "github.com/onsi/ginkgo",
 			"revision": "eea6ad008b96acdaa524f5b409513bf062b500ad",
@@ -283,6 +301,18 @@
 			"path": "golang.org/x/crypto/blowfish",
 			"revision": "74369b46fc6756741c016591724fd1cb8e26845f",
 			"revisionTime": "2019-02-10T12:59:10Z"
+		},
+		{
+			"checksumSHA1": "GtamqiJoL7PGHsN454AoffBFMa8=",
+			"path": "golang.org/x/net/context",
+			"revision": "24e19bdeb0f2d062d8e2640d50a7aaf2a7f80e7a",
+			"revisionTime": "2019-06-07T04:56:05Z"
+		},
+		{
+			"checksumSHA1": "aFpql3G+Nw8zkzfqLWQJNZC8pu0=",
+			"path": "golang.org/x/net/context/ctxhttp",
+			"revision": "24e19bdeb0f2d062d8e2640d50a7aaf2a7f80e7a",
+			"revisionTime": "2019-06-07T04:56:05Z"
 		},
 		{
 			"checksumSHA1": "Vj7GeUWk9nB69/MbXIbzm7fmKn4=",
