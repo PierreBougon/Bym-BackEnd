@@ -4,6 +4,7 @@ import (
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
 
 	"fmt"
+	"sort"
 
 	"github.com/jinzhu/gorm"
 )
@@ -67,13 +68,31 @@ func (song *Song) Create(user uint) map[string]interface{} {
 func GetSongs(playlist uint) []*Song {
 
 	songs := make([]*Song, 0)
-	err := GetDB().Table("songs").Where("playlist_id = ?", playlist).Find(&songs).Error
+	err := GetDB().Table("songs").Where("playlist_id = ?", playlist).
+		Order("score").Find(&songs).Error
 	fmt.Println(err)
 	if err != nil {
 		fmt.Println(err)
 		return nil
 	}
-
+	sort.Slice(songs, func(i, j int) bool {
+		status := []string{
+			"STOP",
+			"PLAYING",
+			"PAUSE",
+			"NONE",
+		}
+		first := songs[i].Status
+		second := songs[j].Status
+		for k := 0; k < len(status); k++ {
+			if status[k] == first {
+				return true
+			} else if status[k] == second {
+				return false
+			}
+		}
+		return true
+	})
 	return songs
 }
 
