@@ -33,58 +33,42 @@ func GetVotesBySongId(songid uint) []*Vote {
 	return votes
 }
 
-func UpVoteSong(songid uint, user uint) map[string]interface{} {
-	flag := false
-	vote := Vote{}
-	err := GetDB().Table("votes").Where("song_id = ? AND user_id = ?", songid, user).Find(&vote).Error
+func updateVote(songid uint, user uint, upVote bool) map[string]interface{} {
+	err := GetDB().Table("songs").Find(&Song{}, "id = ?", songid).Error
 	if err != nil {
-		flag = true
-		vote.UserId = user
-		vote.SongId = songid
+		return u.Message(false, "Request failed, connection error or songId does not exist")
 	}
 
-	if vote.UpVote == true {
-		return u.Message(true, "This request has performed no action")
-	}
-	if vote.DownVote == true {
-		vote.DownVote = false
-	}
-	if vote.UpVote == false {
-		vote.UpVote = true
-		if flag {
-			db.Create(&vote)
-		} else {
-			db.Save(&vote)
+	vote := Vote{}
+	res := GetDB().Table("votes").
+		Find(&vote, "song_id = ? AND user_id = ?", songid, user)
+	errNbr := len(res.GetErrors())
+	notFound := res.RecordNotFound()
+	// Database failure: Only one error happened which is not RecordNotFound or other error(s) happened
+	if  (errNbr > 1 && notFound) ||	(errNbr > 0 && !notFound) {
+		return u.Message(false, "Request failed, connection error")
+		// If Vote did not exist, fill the data of the new one
+	} else if res.RecordNotFound() {
+		vote.UserId = user
+		vote.SongId = songid
+	} else {
+		if vote.UpVote == upVote {
+			return u.Message(true, "This request has performed no action")
 		}
-		RefreshSongVotes(songid)
 	}
+	// Update value of the up/down vote
+	vote.UpVote = upVote
+	vote.DownVote = !upVote
+	db.Save(&vote)
+	RefreshSongVotes(songid)
 	return u.Message(true, "Song successfully up voted !")
 }
 
-func DownVoteSong(songid uint, user uint) map[string]interface{} {
-	flag := false
-	vote := Vote{}
-	err := GetDB().Table("votes").Where("song_id = ? AND user_id = ?", songid, user).Find(&vote).Error
-	if err != nil {
-		flag = true
-		vote.UserId = user
-		vote.SongId = songid
-	}
-
-	if vote.DownVote == true {
-		return u.Message(true, "This request has performed no action")
-	}
-	if vote.UpVote == true {
-		vote.UpVote = false
-	}
-	if vote.DownVote == false {
-		vote.DownVote = true
-		if flag {
-			db.Create(&vote)
-		} else {
-			db.Save(&vote)
-		}
-		RefreshSongVotes(songid)
-	}
-	return u.Message(true, "Song successfully down voted !")
+func UpVoteSong(songid uint, user uint) map[string]interface{} {
+	return updateVote(songid, user, true)
 }
+
+func DownVoteSong(songid uint, user uint) map[string]interface{} {
+	return updateVote(songid, user, false)
+}
+
