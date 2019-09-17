@@ -1,9 +1,9 @@
 package main
 
 import (
-	"Bym-BackEnd/app"
-	"Bym-BackEnd/controllers"
-	"Bym-BackEnd/moesif"
+	"github.com/PierreBougon/Bym-BackEnd/app"
+	"github.com/PierreBougon/Bym-BackEnd/controllers"
+	"github.com/PierreBougon/Bym-BackEnd/moesif"
 
 	"fmt"
 	"net/http"
