@@ -2,7 +2,6 @@ package models
 
 import (
 	u "Bym-BackEnd/utils"
-
 	"fmt"
 
 	"github.com/jinzhu/gorm"
@@ -71,7 +70,6 @@ func GetSongs(playlist uint) []*Song {
 		fmt.Println(err)
 		return nil
 	}
-
 	return songs
 }
 
@@ -105,7 +103,7 @@ func (song *Song) DeleteSong(user uint, songId uint) map[string]interface{} {
 func GetSongsRanking(playlist uint) []*Ranking {
 
 	songs := make([]*Song, 0)
-	err := GetDB().Table("songs").Where("playlist_id = ?", playlist).Find(&songs).Error
+	err := GetDB().Table("songs").Where("playlist_id = ?", playlist).Find(&songs).Order("score desc").Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
