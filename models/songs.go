@@ -3,6 +3,7 @@ package models
 import (
 	u "Bym-BackEnd/utils"
 	"fmt"
+	"sort"
 
 	"github.com/jinzhu/gorm"
 )
@@ -65,12 +66,51 @@ func (song *Song) Create(user uint) map[string]interface{} {
 
 func GetSongs(playlist uint) []*Song {
 	songs := make([]*Song, 0)
-	err := GetDB().Table("songs").Where("playlist_id = ?", playlist).Find(&songs).Order("score desc").Error
+	err := GetDB().Table("songs").Where("playlist_id = ?", playlist).Order("score desc").Find(&songs).Error
 	fmt.Println(err)
 	if err != nil {
 		fmt.Println(err)
 		return nil
 	}
+	//songs = pushFrontPlayingSong(songs)
+	songs = pushFrontPlayedSongs(songs)
+	return songs
+}
+
+func pushFrontPlayingSong(songs []*Song) []*Song {
+	for i := 0; i < len(songs); i++ {
+		if songs[i].Status == "PLAYING" {
+			playingSong := songs[i]
+			songs = append(songs[:i], songs[i:]...)
+			songs = append([]*Song{playingSong}, songs...)
+			return songs
+		}
+	}
+	return nil
+}
+
+func pushFrontPlayedSongs(songs []*Song) []*Song {
+	sort.Slice(songs, func(i, j int) bool {
+		status := []string{
+			"PLAYED",
+			"PLAYING",
+			"PAUSE",
+			"NONE",
+		}
+		first := songs[i].Status
+		second := songs[j].Status
+		for k := 0; k < len(status); k++ {
+			if first == second {
+				return false
+			}
+			if status[k] == first {
+				return true
+			} else if status[k] == second {
+				return false
+			}
+		}
+		return true
+	})
 	return songs
 }
 
@@ -87,6 +127,10 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]i
 		retSong.Name = newSong.Name
 	}
 	if newSong.Status != "" && isStatusValid(newSong.Status) {
+		if newSong.Status == "STOP" {
+			newSong.Status = "PLAYED"
+			retSong.Score = -1
+		}
 		retSong.Status = newSong.Status
 	}
 	db.Save(&retSong)
@@ -94,7 +138,7 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]i
 }
 
 func isStatusValid(status string) bool {
-	if status == "NONE" || status == "PLAYING" || status == "STOP" || status == "PAUSE" {
+	if status == "NONE" || status == "PLAYING" || status == "STOP" || status == "PAUSE" || status == "PLAYED" {
 		return true
 	}
 	return false
@@ -135,7 +179,6 @@ func GetSongsRanking(playlist uint) []*Ranking {
 		ranks[i].VoteDown = songJson.VoteDown
 		ranks[i].Score = songJson.Score
 	}
-
 	return ranks
 }
 
