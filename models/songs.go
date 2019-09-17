@@ -1,8 +1,8 @@
 package models
 
 import (
-	u "Bym-BackEnd/utils"
 	"fmt"
+	u "github.com/PierreBougon/Bym-BackEnd/utils"
 	"sort"
 
 	"github.com/jinzhu/gorm"
