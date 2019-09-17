@@ -1,10 +1,10 @@
 package controllers
 
 import (
+	"Bym-BackEnd/models"
+	u "Bym-BackEnd/utils"
 	"encoding/json"
 	"fmt"
-	"github.com/PierreBougon/Bym-BackEnd/models"
-	u "github.com/PierreBougon/Bym-BackEnd/utils"
 	"github.com/gorilla/mux"
 	"net"
 	"net/http"

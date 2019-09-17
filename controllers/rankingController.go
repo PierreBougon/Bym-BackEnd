@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"github.com/PierreBougon/Bym-BackEnd/models"
-	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	"Bym-BackEnd/models"
+	u "Bym-BackEnd/utils"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"

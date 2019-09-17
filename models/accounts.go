@@ -1,7 +1,7 @@
 package models
 
 import (
-	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	u "Bym-BackEnd/utils"
 
 	"os"
 	"strings"
