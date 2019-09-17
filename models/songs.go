@@ -1,7 +1,7 @@
 package models
 
 import (
-	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	u "Bym-BackEnd/utils"
 
 	"fmt"
 
@@ -64,9 +64,8 @@ func (song *Song) Create(user uint) map[string]interface{} {
 }
 
 func GetSongs(playlist uint) []*Song {
-
 	songs := make([]*Song, 0)
-	err := GetDB().Table("songs").Where("playlist_id = ?", playlist).Find(&songs).Error
+	err := GetDB().Table("songs").Where("playlist_id = ?", playlist).Find(&songs).Order("score desc").Error
 	fmt.Println(err)
 	if err != nil {
 		fmt.Println(err)
