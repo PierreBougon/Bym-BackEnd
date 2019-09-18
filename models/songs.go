@@ -77,6 +77,25 @@ func GetSongs(playlist uint) []*Song {
 	return songs
 }
 
+func refreshPlaylistScoring(playlistId uint) {
+	songs := make([]*Song, 0)
+	err := GetDB().Table("songs").Where("playlist_id = ?", playlistId).Order("score desc").Find(&songs).Error
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for i := 0; i < len(songs); i++ {
+		song := songs[i]
+		song.Score += 10
+		if song.Status == "PLAYED" {
+			song.Score += song.VoteUp*10 - song.VoteDown*10
+		} else if song.Status == "NONE" {
+			song.Score += song.VoteUp*30 - song.VoteDown*30
+		}
+	}
+	db.Save(songs)
+}
+
 func pushFrontPlayingSong(songs []*Song) []*Song {
 	for i := 0; i < len(songs); i++ {
 		if songs[i].Status == "PLAYING" {
@@ -130,6 +149,7 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]i
 		if newSong.Status == "STOP" {
 			newSong.Status = "PLAYED"
 			retSong.Score = -1
+			go refreshPlaylistScoring(retSong.PlaylistId)
 		}
 		retSong.Status = newSong.Status
 	}
