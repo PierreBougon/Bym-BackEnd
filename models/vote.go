@@ -60,7 +60,7 @@ func updateVote(songid uint, user uint, upVote bool) map[string]interface{} {
 	vote.UpVote = upVote
 	vote.DownVote = !upVote
 	db.Save(&vote)
-	RefreshSongVotes(songid)
+	go RefreshSongVotes(songid)
 	return u.Message(true, "Song successfully up voted !")
 }
 
