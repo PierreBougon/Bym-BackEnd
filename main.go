@@ -34,11 +34,12 @@ func main() {
 	router.HandleFunc("", u.RespondBasicSuccess).Methods("GET")
 	api.HandleFunc("", u.RespondBasicSuccess).Methods("GET")
 
-	//		Auth
+	//		Auth / Account
 	auth := api.PathPrefix("/user").Subrouter()
 	auth.HandleFunc("/new", controllers.CreateAccount).Methods("POST")
 	auth.HandleFunc("/login", controllers.Authenticate).Methods("POST")
 	auth.HandleFunc("", controllers.UpdateAccount).Methods("PUT")
+	auth.HandleFunc("", controllers.GetAccount).Methods("GET")
 	auth.HandleFunc("/update_password", controllers.UpdatePassword).Methods("PATCH")
 
 	//		Playlist
