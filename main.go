@@ -4,6 +4,7 @@ import (
 	"github.com/PierreBougon/Bym-BackEnd/app"
 	"github.com/PierreBougon/Bym-BackEnd/controllers"
 	"github.com/PierreBougon/Bym-BackEnd/moesif"
+	u "github.com/PierreBougon/Bym-BackEnd/utils"
 
 	"fmt"
 	"net/http"
@@ -17,7 +18,8 @@ func main() {
 	router := mux.NewRouter()
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 
-	port := os.Getenv("PORT") //Get port from .env file, we did not specify any port so this should return an empty string when tested locally
+	// Get port from .env file, we did not specify any port so this should return an empty string when tested locally
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = "443"
 	}
@@ -28,10 +30,16 @@ func main() {
 	api := router.PathPrefix("/api").Subrouter()
 	api.Use(moesif.MiddlewareWrapper)
 
-	//		Auth
+	// Respond a basic success if anyone wants to get from / or /api to let them now the url is correct and server is up
+	router.HandleFunc("", u.RespondBasicSuccess).Methods("GET")
+	api.HandleFunc("", u.RespondBasicSuccess).Methods("GET")
+
+	//		Auth / Account
 	auth := api.PathPrefix("/user").Subrouter()
 	auth.HandleFunc("/new", controllers.CreateAccount).Methods("POST")
 	auth.HandleFunc("/login", controllers.Authenticate).Methods("POST")
+	auth.HandleFunc("", controllers.UpdateAccount).Methods("PUT")
+	auth.HandleFunc("", controllers.GetAccount).Methods("GET")
 	auth.HandleFunc("/update_password", controllers.UpdatePassword).Methods("PATCH")
 
 	//		Playlist
@@ -49,7 +57,7 @@ func main() {
 	song.HandleFunc("/{id}", controllers.UpdateSong).Methods("PUT")
 	song.HandleFunc("/{id}", controllers.DeleteSong).Methods("DELETE")
 
-	//			Ranking (Fraction of Songs parsed to access it directly)
+	//		Ranking (Fraction of Songs parsed to access it directly)
 	ranking := song.PathPrefix("/ranking").Subrouter()
 	ranking.HandleFunc("", controllers.GetRankings).Methods("GET")
 	ranking.HandleFunc("/{id}", controllers.GetRanking).Methods("GET")
@@ -60,7 +68,8 @@ func main() {
 	vote.HandleFunc("", controllers.GetVote).Methods("GET")
 	//	vote.HandleFunc("/{id}", controllers.DeleteSong).Methods("DELETE")
 
-	err := http.ListenAndServe(":"+port, router) //Launch the app, visit localhost:8000/api
+	//Launch the app, visit localhost:443/api
+	err := http.ListenAndServe(":"+port, router)
 	if err != nil {
 		fmt.Print(err)
 	}

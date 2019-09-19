@@ -12,6 +12,7 @@ import (
 
 var CreatePlaylist = func(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value("user").(uint)
+
 	var playlist = &models.Playlist{}
 	err := json.NewDecoder(r.Body).Decode(playlist) //decode the request body into struct and failed if any error occur
 	if err != nil {

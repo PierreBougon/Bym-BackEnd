@@ -26,6 +26,7 @@ type Account struct {
 	Email        string     `json:"email"`
 	Password     string     `json:"password"`
 	TokenVersion uint       `json:"token_version"`
+	Picture      string     `json:"picture"`
 	Playlists    []Playlist `gorm:"ForeignKey:UserId"`
 }
 
@@ -88,6 +89,19 @@ func (account *Account) Create() map[string]interface{} {
 	response := u.Message(true, "Account has been created")
 	response["token"] = tokenString
 	return response
+}
+
+func (account *Account) UpdateAccount() map[string]interface{} {
+	retAcc := &Account{}
+	err := db.First(&retAcc, account.ID).Error
+	if err != nil /*|| playlist.UserId != user*/ {
+		return u.Message(false, "Invalid account")
+	}
+	if account.Picture != "" {
+		retAcc.Picture = account.Picture
+	}
+	db.Save(&retAcc)
+	return u.Message(true, "Account successfully updated")
 }
 
 func Login(email, password string) map[string]interface{} {
