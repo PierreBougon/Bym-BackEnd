@@ -33,6 +33,20 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+var UpdateAccount = func(w http.ResponseWriter, r *http.Request) {
+	var account = &models.Account{}
+	err := json.NewDecoder(r.Body).Decode(account) //decode the request body into struct and failed if any error occur
+	if err != nil {
+		u.RespondBadRequest(w)
+		return
+	}
+	resp := account.UpdateAccount()
+	if resp["status"] == false {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	u.Respond(w, resp)
+}
+
 var UpdatePassword = func(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value("user").(uint)
 	account := &models.Account{}
