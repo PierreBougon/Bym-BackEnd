@@ -46,7 +46,7 @@ func (playlist *Playlist) Create(user uint) map[string]interface{} {
 
 func GetPlaylistById(u uint) *Playlist {
 	retPlaylist := &Playlist{}
-	GetDB().Table("playlists").Where("id = ?", u).First(retPlaylist)
+	GetDB().Preload("Songs").Table("playlists").Where("id = ?", u).First(retPlaylist)
 	if retPlaylist.Name == "" {
 		return nil
 	}

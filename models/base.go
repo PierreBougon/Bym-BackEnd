@@ -80,6 +80,7 @@ func init() {
 
 	db = conn
 	migrate()
+	db.Set("gorm:auto_preload", true)
 }
 
 //returns a handle to the DB object
