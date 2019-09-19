@@ -92,8 +92,8 @@ func refreshPlaylistScoring(playlistId uint) {
 		} else if song.Status == "NONE" {
 			song.Score += song.VoteUp*30 - song.VoteDown*30
 		}
+		db.Save(song)
 	}
-	db.Save(songs)
 }
 
 func pushFrontPlayingSong(songs []*Song) []*Song {
