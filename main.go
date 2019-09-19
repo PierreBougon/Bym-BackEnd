@@ -38,6 +38,7 @@ func main() {
 	auth := api.PathPrefix("/user").Subrouter()
 	auth.HandleFunc("/new", controllers.CreateAccount).Methods("POST")
 	auth.HandleFunc("/login", controllers.Authenticate).Methods("POST")
+	auth.HandleFunc("", controllers.UpdatePassword).Methods("PUT")
 	auth.HandleFunc("/update_password", controllers.UpdatePassword).Methods("PATCH")
 
 	//		Playlist
