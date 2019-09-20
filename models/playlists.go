@@ -3,12 +3,10 @@ package models
 import (
 	"fmt"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
-
-	"github.com/jinzhu/gorm"
 )
 
 type Playlist struct {
-	gorm.Model
+	Model
 	Name        string `json:"name"`
 	UserId      uint   `json:"user_id"`
 	SongsNumber int    `json:"songs_number"`
