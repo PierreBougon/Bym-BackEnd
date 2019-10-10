@@ -104,6 +104,20 @@ func (account *Account) UpdateAccount() map[string]interface{} {
 	return u.Message(true, "Account successfully updated")
 }
 
+func (account *Account) DeleteAccount(user uint) map[string]interface{} {
+	retAccount := &Account{}
+/*	if user != userToDelete {
+		return u.Message(false, "This account does not belong to you")
+	}*/
+	err := db.Table("accounts").Where("id = ?", user).First(&retAccount).Error
+	// should not be possible since user is fetch from auth token
+	if err != nil {
+		return u.Message(false, "This account does not exist")
+	}
+	db.Delete(&retAccount)
+	return u.Message(true, "Account successfully deleted")
+}
+
 func Login(email, password string) map[string]interface{} {
 
 	account := &Account{}

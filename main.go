@@ -37,6 +37,7 @@ func main() {
 	auth := api.PathPrefix("/user").Subrouter()
 	auth.HandleFunc("/new", controllers.CreateAccount).Methods("POST")
 	auth.HandleFunc("/login", controllers.Authenticate).Methods("POST")
+	auth.HandleFunc("/delete", controllers.DeleteAccount).Methods("DELETE")
 	auth.HandleFunc("", controllers.UpdateAccount).Methods("PUT")
 	auth.HandleFunc("", controllers.GetAccount).Methods("GET")
 	auth.HandleFunc("/update_password", controllers.UpdatePassword).Methods("PATCH")
