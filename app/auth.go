@@ -67,7 +67,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 
 		account := models.GetUser(tk.UserId)
 		if account == nil {
-			sendErrorJson(w, "Account does not exist", http.StatusForbidden)
+			sendErrorJson(w, "Account linked to the authorization token does not exist (anymore)", http.StatusForbidden)
 			return
 		}
 		if tk.TokenVersion != account.TokenVersion {
