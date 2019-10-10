@@ -22,7 +22,7 @@ type Song struct {
 
 type SongExtended struct {
 	Song
-	PersonalVote bool `json:"personal_vote"`
+	PersonalVote *bool `json:"personal_vote"`
 }
 
 // Not a model used to hold part of the song model
