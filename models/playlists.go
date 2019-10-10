@@ -13,6 +13,8 @@ type Playlist struct {
 	UserId      uint   `json:"user_id"`
 	SongsNumber int    `json:"songs_number"`
 	Songs       []Song `gorm:"ForeignKey:PlaylistId"`
+	Follower	[]*Account `gorm:"many2many:account_playlist;"`
+	FollowerCount int 	`json:"follower_count"`
 }
 
 func (playlist *Playlist) Validate() (map[string]interface{}, bool) {
@@ -42,6 +44,12 @@ func (playlist *Playlist) Create(user uint) map[string]interface{} {
 	response := u.Message(true, "Playlist has been created")
 	response["playlist"] = playlist
 	return response
+}
+
+func (playlist *Playlist) Join(user uint) map[string]interface{} {
+	GetDB().Model(&playlist).Association("Follower").Append(&Account{ID: user})
+	playlist.FollowerCount++
+
 }
 
 func GetPlaylistById(u uint) *Playlist {
@@ -93,6 +101,7 @@ func (playlist *Playlist) DeletePlaylist(user uint, playlistId uint) map[string]
 	if err != nil {
 		return u.Message(false, "Invalid playlist, you may not own this playlist")
 	}
+	//GetDB().Model(retPlaylist).Association("Follower").Delete(&Account{user})
 	db.Delete(&retPlaylist)
 	return u.Message(true, "Playlist successfully deleted")
 }
