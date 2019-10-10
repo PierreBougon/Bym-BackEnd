@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	"github.com/jinzhu/gorm"
 )
 
 type Playlist struct {
@@ -44,10 +45,30 @@ func (playlist *Playlist) Create(user uint) map[string]interface{} {
 	return response
 }
 
-func (playlist *Playlist) Join(user uint) map[string]interface{} {
-	GetDB().Model(&playlist).Association("Follower").Append(&Account{ID: user})
-	playlist.FollowerCount++
+func (playlist *Playlist) Join(user uint, playlistId uint) map[string]interface{} {
+	account := &Account{}
+	retPlaylist := &Playlist{}
+	err := GetDB().Table("playlists").Where("id = ?", playlistId).Find(&retPlaylist).Error
+	if err != nil {
+		return u.Message(false, "This playlist does not exist")
+	}
+	if retPlaylist.UserId == user {
+		return u.Message(true, "Author does not need to follow his playlist")
+	}
+	res := make(map[int]int, 0)
+	notFound := GetDB().Table("account_playlist").
+		Where("account_id = ? AND playlist_id = ?", user, playlistId).First(&res).RecordNotFound()
+	if notFound {
+		return u.Message(true, "User already joined the playlist")
+	}
 
+	err = GetDB().Table("accounts").Where("id = ?", user).Find(&account).Error
+	fmt.Println("join: fetch account : ", err)
+	err = GetDB().Model(retPlaylist).Association("Follower").Append(account).Error
+	fmt.Println("join: append account : ", err)
+	err = GetDB().Model(retPlaylist).UpdateColumn("follower_count", gorm.Expr("follower_count + ?", 1)).Error
+	fmt.Println("join: update follower count : ", err)
+	return u.Message(true, "User has joined the playlist")
 }
 
 func GetPlaylistById(u uint) *Playlist {
@@ -99,7 +120,7 @@ func (playlist *Playlist) DeletePlaylist(user uint, playlistId uint) map[string]
 	if err != nil {
 		return u.Message(false, "Invalid playlist, you may not own this playlist")
 	}
-	//GetDB().Model(retPlaylist).Association("Follower").Delete(&Account{user})
+	GetDB().Model(retPlaylist).Association("Follower").Clear()
 	db.Delete(&retPlaylist)
 	return u.Message(true, "Playlist successfully deleted")
 }
