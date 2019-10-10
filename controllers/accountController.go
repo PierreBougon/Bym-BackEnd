@@ -1,10 +1,9 @@
 package controllers
 
 import (
+	"encoding/json"
 	"github.com/PierreBougon/Bym-BackEnd/models"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
-
-	"encoding/json"
 	"net/http"
 )
 
@@ -51,6 +50,7 @@ var UpdateAccount = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var UpdatePassword = func(w http.ResponseWriter, r *http.Request) {
+
 	user := r.Context().Value("user").(uint)
 	account := &models.Account{}
 	err := json.NewDecoder(r.Body).Decode(account) //decode the request body into struct and failed if any error occur
