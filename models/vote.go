@@ -3,11 +3,10 @@ package models
 import (
 	"fmt"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
-	"github.com/jinzhu/gorm"
 )
 
 type Vote struct {
-	gorm.Model
+	Model
 	UpVote   bool `json:"up_vote"`
 	DownVote bool `json:"down_vote"`
 	UserId   uint `json:"user_id"`
