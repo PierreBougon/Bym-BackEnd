@@ -4,12 +4,10 @@ import (
 	"fmt"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
 	"sort"
-
-	"github.com/jinzhu/gorm"
 )
 
 type Song struct {
-	gorm.Model
+	Model
 	Name       string `json:"name"`
 	PlaylistId uint   `json:"playlist_id"`
 	ExternalId string `json:"external_id"`
