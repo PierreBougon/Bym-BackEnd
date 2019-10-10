@@ -55,19 +55,18 @@ func (playlist *Playlist) Join(user uint, playlistId uint) map[string]interface{
 	if retPlaylist.UserId == user {
 		return u.Message(true, "Author does not need to follow his playlist")
 	}
-	res := make(map[int]int, 0)
-	notFound := GetDB().Table("account_playlist").
-		Where("account_id = ? AND playlist_id = ?", user, playlistId).First(&res).RecordNotFound()
-	if notFound {
-		return u.Message(true, "User already joined the playlist")
+
+	res := make([]*Account, 0)
+	GetDB().Model(retPlaylist).Association("Follower").Find(&res)
+	for _, follower := range res {
+		if follower.ID == user {
+			return u.Message(true, "User already joined the playlist")
+		}
 	}
 
-	err = GetDB().Table("accounts").Where("id = ?", user).Find(&account).Error
-	fmt.Println("join: fetch account : ", err)
-	err = GetDB().Model(retPlaylist).Association("Follower").Append(account).Error
-	fmt.Println("join: append account : ", err)
-	err = GetDB().Model(retPlaylist).UpdateColumn("follower_count", gorm.Expr("follower_count + ?", 1)).Error
-	fmt.Println("join: update follower count : ", err)
+	GetDB().Table("accounts").Where("id = ?", user).Find(&account)
+	GetDB().Model(retPlaylist).Association("Follower").Append(account)
+	GetDB().Model(retPlaylist).UpdateColumn("follower_count", gorm.Expr("follower_count + ?", 1))
 	return u.Message(true, "User has joined the playlist")
 }
 
