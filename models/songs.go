@@ -18,6 +18,11 @@ type Song struct {
 	// We can add image + infos etc
 }
 
+type SongExtended struct {
+	Song
+	PersonalVote *bool `json:"personal_vote"`
+}
+
 // Not a model used to hold part of the song model
 type Ranking struct {
 	SongId   uint `json:"song_id"`
@@ -34,6 +39,7 @@ func (song *Song) Validate(user uint) (map[string]interface{}, bool) {
 		return u.Message(false, "Invalid playlist"), false
 	}
 	playlist := &Playlist{}
+	//Todo check if song already exists
 	err := db.First(playlist, song.PlaylistId).Error
 	if err != nil /*|| playlist.UserId != user */ {
 		return u.Message(false, "Invalid song, playlist may not be created"), false
@@ -62,9 +68,14 @@ func (song *Song) Create(user uint) map[string]interface{} {
 	return response
 }
 
-func GetSongs(playlist uint) []*Song {
-	songs := make([]*Song, 0)
-	err := GetDB().Table("songs").Where("playlist_id = ?", playlist).Order("score desc").Find(&songs).Error
+func GetSongs(playlist uint) []*SongExtended {
+	songs := make([]*SongExtended, 0)
+	err := GetDB().Table("songs").
+		Select("songs.*, Coalesce(votes.up_vote, votes.down_vote) as personal_vote").
+		Joins("LEFT JOIN votes ON votes.song_id = songs.id").
+		Where("playlist_id = ?", playlist).
+		Find(&songs).Error
+
 	fmt.Println(err)
 	if err != nil {
 		fmt.Println(err)
@@ -106,7 +117,7 @@ func pushFrontPlayingSong(songs []*Song) []*Song {
 	return nil
 }
 
-func pushFrontPlayedSongs(songs []*Song) []*Song {
+func pushFrontPlayedSongs(songs []*SongExtended) []*SongExtended {
 	sort.Slice(songs, func(i, j int) bool {
 		status := []string{
 			"PLAYED",
