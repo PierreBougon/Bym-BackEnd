@@ -31,10 +31,10 @@ func migrate() {
 		&Song{},
 		&Vote{})
 	db.Model(&Account{}).RemoveIndex("token")
-	db.Model(&Song{}).AddForeignKey("playlist_id", "playlists(id)", "CASCADE", "RESTRICT")
-	db.Model(&Playlist{}).AddForeignKey("user_id", "accounts(id)", "CASCADE", "RESTRICT")
-	db.Model(&Vote{}).AddForeignKey("user_id", "accounts(id)", "CASCADE", "RESTRICT")
-	db.Model(&Vote{}).AddForeignKey("song_id", "songs(id)", "CASCADE", "RESTRICT")
+	db.Model(&Song{}).AddForeignKey("playlist_id", "playlists(id)", "CASCADE", "CASCADE")
+	db.Model(&Playlist{}).AddForeignKey("user_id", "accounts(id)", "CASCADE", "CASCADE")
+	db.Model(&Vote{}).AddForeignKey("user_id", "accounts(id)", "CASCADE", "CASCADE")
+	db.Model(&Vote{}).AddForeignKey("song_id", "songs(id)", "CASCADE", "CASCADE")
 }
 
 func getDbInfoFromEnv() (dbDialect string, dbUri string) {
@@ -80,6 +80,7 @@ func init() {
 
 	db = conn
 	migrate()
+	db.Set("gorm:auto_preload", true)
 }
 
 //returns a handle to the DB object

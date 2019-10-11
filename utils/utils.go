@@ -29,3 +29,8 @@ func RespondBadRequestWithMessage(w http.ResponseWriter, message string) {
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(Message(false, message))
 }
+
+func RespondBasicSuccess(w http.ResponseWriter, r *http.Request) {
+	resp := Message(true, "Success")
+	Respond(w, resp)
+}

@@ -22,11 +22,13 @@ type Token struct {
 
 //a struct to rep user account
 type Account struct {
-	gorm.Model
+	Model
 	Email        string     `json:"email"`
 	Password     string     `json:"password"`
 	TokenVersion uint       `json:"token_version"`
+	Picture      string     `json:"picture"`
 	Playlists    []Playlist `gorm:"ForeignKey:UserId"`
+	FollowedPlaylists []*Playlist `gorm:"many2many:account_playlist"`
 }
 
 func (account *Account) ValidatePassword() (map[string]interface{}, bool) {
@@ -88,6 +90,37 @@ func (account *Account) Create() map[string]interface{} {
 	response := u.Message(true, "Account has been created")
 	response["token"] = tokenString
 	return response
+}
+
+func (account *Account) UpdateAccount() map[string]interface{} {
+	retAcc := &Account{}
+	err := db.First(&retAcc, account.ID).Error
+	if err != nil /*|| playlist.UserId != user*/ {
+		return u.Message(false, "Invalid account")
+	}
+	if account.Picture != "" {
+		retAcc.Picture = account.Picture
+	}
+	db.Save(&retAcc)
+	return u.Message(true, "Account successfully updated")
+}
+
+func (account *Account) DeleteAccount(user uint) map[string]interface{} {
+	retAccount := &Account{}
+
+	err := db.Table("accounts").Where("id = ?", user).First(&retAccount).Error
+	// should not be possible since user is fetch from auth token
+	if err != nil {
+		return u.Message(false, "This account does not exist")
+	}
+	playlists := make([]*Playlist, 0)
+	db.Model(retAccount).Association("FollowedPlaylists").Find(&playlists)
+	for _, playlist := range playlists {
+		db.Model(playlist).UpdateColumn("follower_count", gorm.Expr("follower_count - ?", 1))
+	}
+	db.Model(retAccount).Association("FollowedPlaylists").Clear()
+	db.Delete(&retAccount)
+	return u.Message(true, "Account successfully deleted")
 }
 
 func Login(email, password string) map[string]interface{} {

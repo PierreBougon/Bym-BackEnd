@@ -3,16 +3,17 @@ package models
 import (
 	"fmt"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
-
 	"github.com/jinzhu/gorm"
 )
 
 type Playlist struct {
-	gorm.Model
+	Model
 	Name        string `json:"name"`
 	UserId      uint   `json:"user_id"`
 	SongsNumber int    `json:"songs_number"`
 	Songs       []Song `gorm:"ForeignKey:PlaylistId"`
+	Follower	[]*Account `gorm:"many2many:account_playlist;"`
+	FollowerCount int 	`json:"follower_count"`
 }
 
 func (playlist *Playlist) Validate() (map[string]interface{}, bool) {
@@ -44,9 +45,58 @@ func (playlist *Playlist) Create(user uint) map[string]interface{} {
 	return response
 }
 
+func (playlist *Playlist) Join(user uint, playlistId uint) map[string]interface{} {
+	account := &Account{}
+	retPlaylist := &Playlist{}
+	err := GetDB().Table("playlists").Where("id = ?", playlistId).Find(&retPlaylist).Error
+	if err != nil {
+		return u.Message(false, "This playlist does not exist")
+	}
+	if retPlaylist.UserId == user {
+		return u.Message(true, "Author does not need to follow his playlist")
+	}
+
+	res := make([]*Account, 0)
+	GetDB().Model(retPlaylist).Association("Follower").Find(&res)
+	for _, follower := range res {
+		if follower.ID == user {
+			return u.Message(true, "User already joined the playlist")
+		}
+	}
+
+	GetDB().Table("accounts").Where("id = ?", user).Find(&account)
+	GetDB().Model(retPlaylist).Association("Follower").Append(account)
+	GetDB().Model(retPlaylist).UpdateColumn("follower_count", gorm.Expr("follower_count + ?", 1))
+	return u.Message(true, "User has joined the playlist")
+}
+
+func (playlist *Playlist) LeavePlaylist(user uint, playlistId uint) map[string]interface{} {
+	retPlaylist := &Playlist{}
+	err := db.Where("id = ?", playlistId).First(&retPlaylist, playlistId).Error
+	if err != nil {
+		return u.Message(false, "Playlist does not exist")
+	}
+	accounts := make([]*Account, 0)
+	GetDB().Model(retPlaylist).Association("Follower").Find(&accounts)
+	isFollowed := false
+	for _, account := range accounts {
+		if account.ID == user {
+			isFollowed = true
+		}
+	}
+	if !isFollowed {
+		return u.Message(false, "Playlist is not followed by user")
+	}
+	account := &Account{}
+	GetDB().Table("accounts").Find(&account, "id = ?", user)
+	GetDB().Model(retPlaylist).Association("Follower").Delete(&account)
+	GetDB().Model(retPlaylist).UpdateColumn("follower_count", gorm.Expr("follower_count - ?", 1))
+	return u.Message(true, "Playlist successfully left")
+}
+
 func GetPlaylistById(u uint) *Playlist {
 	retPlaylist := &Playlist{}
-	GetDB().Table("playlists").Where("id = ?", u).First(retPlaylist)
+	GetDB().Preload("Songs").Table("playlists").Where("id = ?", u).First(retPlaylist)
 	if retPlaylist.Name == "" {
 		return nil
 	}
@@ -93,6 +143,7 @@ func (playlist *Playlist) DeletePlaylist(user uint, playlistId uint) map[string]
 	if err != nil {
 		return u.Message(false, "Invalid playlist, you may not own this playlist")
 	}
+	GetDB().Model(retPlaylist).Association("Follower").Clear()
 	db.Delete(&retPlaylist)
 	return u.Message(true, "Playlist successfully deleted")
 }

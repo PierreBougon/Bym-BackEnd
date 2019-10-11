@@ -3,11 +3,10 @@ package models
 import (
 	"fmt"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
-	"github.com/jinzhu/gorm"
 )
 
 type Vote struct {
-	gorm.Model
+	Model
 	UpVote   bool `json:"up_vote"`
 	DownVote bool `json:"down_vote"`
 	UserId   uint `json:"user_id"`
@@ -45,7 +44,7 @@ func updateVote(songid uint, user uint, upVote bool) map[string]interface{} {
 	errNbr := len(res.GetErrors())
 	notFound := res.RecordNotFound()
 	// Database failure: Only one error happened which is not RecordNotFound or other error(s) happened
-	if  (errNbr > 1 && notFound) ||	(errNbr > 0 && !notFound) {
+	if (errNbr > 1 && notFound) || (errNbr > 0 && !notFound) {
 		return u.Message(false, "Request failed, connection error")
 		// If Vote did not exist, fill the data of the new one
 	} else if res.RecordNotFound() {
@@ -60,7 +59,7 @@ func updateVote(songid uint, user uint, upVote bool) map[string]interface{} {
 	vote.UpVote = upVote
 	vote.DownVote = !upVote
 	db.Save(&vote)
-	RefreshSongVotes(songid)
+	go RefreshSongVotes(songid)
 	return u.Message(true, "Song successfully up voted !")
 }
 
@@ -71,4 +70,3 @@ func UpVoteSong(songid uint, user uint) map[string]interface{} {
 func DownVoteSong(songid uint, user uint) map[string]interface{} {
 	return updateVote(songid, user, false)
 }
-
