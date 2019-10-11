@@ -50,6 +50,7 @@ func main() {
 	playlist.HandleFunc("/{id}", controllers.UpdatePlaylist).Methods("PUT")
 	playlist.HandleFunc("/{id}", controllers.DeletePlaylist).Methods("DELETE")
 	playlist.HandleFunc("/join/{id}", controllers.JoinPlaylist).Methods("POST")
+	playlist.HandleFunc("/leave/{id}", controllers.LeavePlaylist).Methods("DELETE")
 
 	//		Songs
 	song := api.PathPrefix("/song").Subrouter()

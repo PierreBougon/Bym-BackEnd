@@ -86,6 +86,21 @@ var UpdatePlaylist = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+var LeavePlaylist = func(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.ParseUint(params["id"], 10, 32)
+	if err != nil {
+		u.RespondBadRequest(w)
+		return
+	}
+	user := r.Context().Value("user").(uint)
+	resp := (&models.Playlist{}).LeavePlaylist(user, uint(id))
+	if resp["status"] == false {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	u.Respond(w, resp)
+}
+
 var DeletePlaylist = func(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 32)

@@ -70,6 +70,30 @@ func (playlist *Playlist) Join(user uint, playlistId uint) map[string]interface{
 	return u.Message(true, "User has joined the playlist")
 }
 
+func (playlist *Playlist) LeavePlaylist(user uint, playlistId uint) map[string]interface{} {
+	retPlaylist := &Playlist{}
+	err := db.Where("id = ?", playlistId).First(&retPlaylist, playlistId).Error
+	if err != nil {
+		return u.Message(false, "Playlist does not exist")
+	}
+	accounts := make([]*Account, 0)
+	GetDB().Model(retPlaylist).Association("Follower").Find(&accounts)
+	isFollowed := false
+	for _, account := range accounts {
+		if account.ID == user {
+			isFollowed = true
+		}
+	}
+	if !isFollowed {
+		return u.Message(false, "Playlist is not followed by user")
+	}
+	account := &Account{}
+	GetDB().Table("accounts").Find(&account, "id = ?", user)
+	GetDB().Model(retPlaylist).Association("Follower").Delete(&account)
+	GetDB().Model(retPlaylist).UpdateColumn("follower_count", gorm.Expr("follower_count - ?", 1))
+	return u.Message(true, "Playlist successfully left")
+}
+
 func GetPlaylistById(u uint) *Playlist {
 	retPlaylist := &Playlist{}
 	GetDB().Preload("Songs").Table("playlists").Where("id = ?", u).First(retPlaylist)
