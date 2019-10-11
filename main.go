@@ -37,6 +37,7 @@ func main() {
 	auth := api.PathPrefix("/user").Subrouter()
 	auth.HandleFunc("/new", controllers.CreateAccount).Methods("POST")
 	auth.HandleFunc("/login", controllers.Authenticate).Methods("POST")
+	auth.HandleFunc("/delete", controllers.DeleteAccount).Methods("DELETE")
 	auth.HandleFunc("", controllers.UpdateAccount).Methods("PUT")
 	auth.HandleFunc("", controllers.GetAccount).Methods("GET")
 	auth.HandleFunc("/update_password", controllers.UpdatePassword).Methods("PATCH")
@@ -48,6 +49,8 @@ func main() {
 	playlist.HandleFunc("/{id}", controllers.GetPlaylist).Methods("GET")
 	playlist.HandleFunc("/{id}", controllers.UpdatePlaylist).Methods("PUT")
 	playlist.HandleFunc("/{id}", controllers.DeletePlaylist).Methods("DELETE")
+	playlist.HandleFunc("/join/{id}", controllers.JoinPlaylist).Methods("POST")
+	playlist.HandleFunc("/leave/{id}", controllers.LeavePlaylist).Methods("DELETE")
 
 	//		Songs
 	song := api.PathPrefix("/song").Subrouter()

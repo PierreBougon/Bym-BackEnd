@@ -21,6 +21,16 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+var DeleteAccount = func(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value("user").(uint)
+
+	resp := (&models.Account{}).DeleteAccount(user)
+	if resp["status"] == false {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	u.Respond(w, resp)
+}
+
 var GetAccount = func(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value("user").(uint)
 
