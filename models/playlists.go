@@ -8,12 +8,13 @@ import (
 
 type Playlist struct {
 	Model
-	Name        string `json:"name"`
-	UserId      uint   `json:"user_id"`
-	SongsNumber int    `json:"songs_number"`
-	Songs       []Song `gorm:"ForeignKey:PlaylistId"`
+	Name        string	`json:"name"`
+	UserId      uint	`json:"user_id"`
+	SongsNumber int     `json:"songs_number"`
+	Songs       []Song  `gorm:"ForeignKey:PlaylistId"`
 	Follower	[]*Account `gorm:"many2many:account_playlist;"`
-	FollowerCount int 	`json:"follower_count"`
+	FollowerCount int	`json:"follower_count"`
+	Acl 		[]PlaylistAccessControl `gorm:"ForeignKey:PlaylistId"`
 }
 
 func (playlist *Playlist) Validate() (map[string]interface{}, bool) {
@@ -45,6 +46,7 @@ func (playlist *Playlist) Create(user uint) map[string]interface{} {
 	return response
 }
 
+// TODO(variable POST optionel pour choisir le ROLE de l'user (BYMER ou FOllOWER), BYMER by default)
 func (playlist *Playlist) Join(user uint, playlistId uint) map[string]interface{} {
 	account := &Account{}
 	retPlaylist := &Playlist{}
@@ -67,7 +69,60 @@ func (playlist *Playlist) Join(user uint, playlistId uint) map[string]interface{
 	GetDB().Table("accounts").Where("id = ?", user).Find(&account)
 	GetDB().Model(retPlaylist).Association("Follower").Append(account)
 	GetDB().Model(retPlaylist).UpdateColumn("follower_count", gorm.Expr("follower_count + ?", 1))
+	// TODO(do the append only if Bymer ROLE is asked in the post parameter)
+	GetDB().Model(retPlaylist).Association("Acl").Append(&PlaylistAccessControl{
+		UserId:     user,
+		PlaylistId: retPlaylist.ID,
+		RoleId:     ROLE_BYMER,
+	})
 	return u.Message(true, "User has joined the playlist")
+}
+
+/*
+TODO(Cas où l'utilisateur dont l'acl est changé n'appartient pas à la playlist ????)
+TODO(Cas où le front ne peut envoyer qu'un email et pas un id)
+TODO(Roles sont rentré à la main dans la db, dans l'ordre croissant d'authorité (1 > 4))
+TODO(Le front peut-il directement utilisé ces 'valeurs' d'autorité en dure, sans avoir besoin de les fetch dans la db ?)
+ */
+func ChangeAclOnPlaylist(user uint, userToPromote uint, playlistId uint, role uint) map[string]interface{} {
+	var (
+		userAcl     uint
+		retPlaylist Playlist
+		oldAcl      PlaylistAccessControl
+	)
+
+	db.Table("playlist_access_controls").
+		Where(&PlaylistAccessControl{UserId: user, PlaylistId: playlistId}).Pluck("role", userAcl)
+	db.Table("playlists").Where("id = ?", playlistId).Find(&retPlaylist)
+	if userAcl != ROLE_ADMIN && retPlaylist.UserId != user {
+		return u.Message(false, "User has no right upon the members of this playlist")
+	}
+	// At this point, if userAcl == 0 then he is Author
+	exist := !db.Table("playlist_access_controls").
+		Where("user_id = ? AND playlist_id = ?", userToPromote, playlistId).Find(&oldAcl).
+		RecordNotFound()
+	if oldAcl.RoleId == role {
+		return u.Message(true, "This user already have this role")
+	}
+	if oldAcl.RoleId == ROLE_ADMIN && role > ROLE_ADMIN && userAcl != 0 {
+		return u.Message(false, "To demote an Admin needs Author rights")
+	}
+	if exist {
+		db.Table("playlist_access_controls").
+			Where("playlist_id = ? AND user_id = ?", playlistId, userToPromote).
+			UpdateColumn("role_id", role)
+	} else {
+		err := db.Table("playlist_access_controls").
+			Create(&PlaylistAccessControl{
+				UserId:     userToPromote,
+				PlaylistId: playlistId,
+				RoleId:     role,
+			}).Error
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+	return u.Message(true, "New role successfully given")
 }
 
 func (playlist *Playlist) LeavePlaylist(user uint, playlistId uint) map[string]interface{} {
@@ -143,7 +198,8 @@ func (playlist *Playlist) DeletePlaylist(user uint, playlistId uint) map[string]
 	if err != nil {
 		return u.Message(false, "Invalid playlist, you may not own this playlist")
 	}
-	GetDB().Model(retPlaylist).Association("Follower").Clear()
-	db.Delete(&retPlaylist)
+	db.Model(retPlaylist).Association("Follower").Clear()
+	db.Model(retPlaylist).Association("Acl").Clear()
+	db.Delete(retPlaylist)
 	return u.Message(true, "Playlist successfully deleted")
 }
