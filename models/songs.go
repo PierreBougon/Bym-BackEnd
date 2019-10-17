@@ -56,6 +56,9 @@ func (song *Song) Create(user uint) map[string]interface{} {
 	if resp, ok := song.Validate(user); !ok {
 		return resp
 	}
+	if !checkRight(user, song.PlaylistId, ROLE_BYMER) {
+		return u.Message(false, "You do not have the right to add a song to this playlist.")
+	}
 
 	GetDB().Create(song)
 
@@ -76,7 +79,6 @@ func GetSongs(playlist uint) []*SongExtended {
 		Where("playlist_id = ?", playlist).
 		Find(&songs).Error
 
-	fmt.Println(err)
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -155,6 +157,9 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]i
 		retSong.Name = newSong.Name
 	}
 	if newSong.Status != "" && isStatusValid(newSong.Status) {
+		if !checkRight(user, playlist.ID, ROLE_ADMIN) {
+			return u.Message(false, "User does not have the right to change th state of a song.")
+		}
 		if newSong.Status == "STOP" {
 			newSong.Status = "PLAYED"
 			retSong.Score = -1
@@ -178,7 +183,7 @@ func (song *Song) DeleteSong(user uint, songId uint) map[string]interface{} {
 	err := db.First(&retSong, songId).Error
 	playlist := &Playlist{}
 	db.First(playlist, retSong.PlaylistId)
-	if err != nil || playlist.UserId != user {
+	if err != nil || !checkRight(user, playlist.ID, ROLE_ADMIN) {
 		return u.Message(false, "Invalid song, you may not own this playlist")
 	}
 	db.Delete(&retSong)

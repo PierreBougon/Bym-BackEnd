@@ -112,15 +112,12 @@ func ChangeAclOnPlaylist(user uint, userToPromote uint, playlistId uint, role ui
 			Where("playlist_id = ? AND user_id = ?", playlistId, userToPromote).
 			UpdateColumn("role_id", role)
 	} else {
-		err := db.Table("playlist_access_controls").
+		db.Table("playlist_access_controls").
 			Create(&PlaylistAccessControl{
 				UserId:     userToPromote,
 				PlaylistId: playlistId,
 				RoleId:     role,
-			}).Error
-		if err != nil {
-			fmt.Println(err)
-		}
+			})
 	}
 	return u.Message(true, "New role successfully given")
 }
