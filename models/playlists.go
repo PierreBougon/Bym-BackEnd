@@ -8,13 +8,13 @@ import (
 
 type Playlist struct {
 	Model
-	Name        string	`json:"name"`
-	UserId      uint	`json:"user_id"`
-	SongsNumber int     `json:"songs_number"`
-	Songs       []Song  `gorm:"ForeignKey:PlaylistId"`
-	Follower	[]*Account `gorm:"many2many:account_playlist;"`
-	FollowerCount int	`json:"follower_count"`
-	Acl 		[]PlaylistAccessControl `gorm:"ForeignKey:PlaylistId"`
+	Name          string                  `json:"name"`
+	UserId        uint                    `json:"user_id"`
+	SongsNumber   int                     `json:"songs_number"`
+	Songs         []Song                  `gorm:"ForeignKey:PlaylistId"`
+	Follower      []*Account              `gorm:"many2many:account_playlist;"`
+	FollowerCount int                     `json:"follower_count"`
+	Acl           []PlaylistAccessControl `gorm:"ForeignKey:PlaylistId"`
 }
 
 func (playlist *Playlist) Validate() (map[string]interface{}, bool) {
@@ -83,7 +83,7 @@ TODO(Cas où l'utilisateur dont l'acl est changé n'appartient pas à la playlis
 TODO(Cas où le front ne peut envoyer qu'un email et pas un id)
 TODO(Roles sont rentré à la main dans la db, dans l'ordre croissant d'authorité (1 > 4))
 TODO(Le front peut-il directement utilisé ces 'valeurs' d'autorité en dure, sans avoir besoin de les fetch dans la db ?)
- */
+*/
 func ChangeAclOnPlaylist(user uint, userToPromote uint, playlistId uint, role uint) map[string]interface{} {
 	var (
 		userAcl     uint
@@ -112,12 +112,7 @@ func ChangeAclOnPlaylist(user uint, userToPromote uint, playlistId uint, role ui
 			Where("playlist_id = ? AND user_id = ?", playlistId, userToPromote).
 			UpdateColumn("role_id", role)
 	} else {
-		db.Table("playlist_access_controls").
-			Create(&PlaylistAccessControl{
-				UserId:     userToPromote,
-				PlaylistId: playlistId,
-				RoleId:     role,
-			})
+		return u.Message(false, "Can not find this user")
 	}
 	return u.Message(true, "New role successfully given")
 }
