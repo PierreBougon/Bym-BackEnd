@@ -33,6 +33,9 @@ func main() {
 	router.HandleFunc("", u.RespondBasicSuccess).Methods("GET")
 	api.HandleFunc("", u.RespondBasicSuccess).Methods("GET")
 
+	//Connect Websocket
+	api.HandleFunc("/ws", controllers.ConnectWebSocket).Methods("GET")
+
 	//		Auth / Account
 	auth := api.PathPrefix("/user").Subrouter()
 	auth.HandleFunc("/new", controllers.CreateAccount).Methods("POST")
