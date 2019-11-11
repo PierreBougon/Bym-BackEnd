@@ -29,7 +29,9 @@ func migrate() {
 		&Account{},
 		&Playlist{},
 		&Song{},
-		&Vote{})
+		&Vote{},
+		&Role{},
+		&PlaylistAccessControl{})
 	db.Model(&Account{}).RemoveIndex("token")
 	db.Model(&Song{}).AddForeignKey("playlist_id", "playlists(id)", "CASCADE", "CASCADE")
 	db.Model(&Playlist{}).AddForeignKey("user_id", "accounts(id)", "CASCADE", "CASCADE")

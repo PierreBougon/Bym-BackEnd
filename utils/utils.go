@@ -24,6 +24,12 @@ func RespondBadRequest(w http.ResponseWriter) {
 	json.NewEncoder(w).Encode(Message(false, "Invalid request"))
 }
 
+func RespondUnhautorized(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusUnauthorized)
+	w.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(Message(false, "Unhautorized"))
+}
+
 func RespondBadRequestWithMessage(w http.ResponseWriter, message string) {
 	w.WriteHeader(http.StatusBadRequest)
 	w.Header().Add("Content-Type", "application/json")

@@ -23,12 +23,13 @@ type Token struct {
 //a struct to rep user account
 type Account struct {
 	Model
-	Email        string     `json:"email"`
+	Email        string     `json:"email",gorm:"type:text;unique;not null"`
 	Password     string     `json:"password"`
 	TokenVersion uint       `json:"token_version"`
 	Picture      string     `json:"picture"`
 	Playlists    []Playlist `gorm:"ForeignKey:UserId"`
 	FollowedPlaylists []*Playlist `gorm:"many2many:account_playlist"`
+	Acl			 []PlaylistAccessControl `gorm:"ForeignKey:UserId"`
 }
 
 func (account *Account) ValidatePassword() (map[string]interface{}, bool) {
@@ -119,6 +120,7 @@ func (account *Account) DeleteAccount(user uint) map[string]interface{} {
 		db.Model(playlist).UpdateColumn("follower_count", gorm.Expr("follower_count - ?", 1))
 	}
 	db.Model(retAccount).Association("FollowedPlaylists").Clear()
+	db.Model(retAccount).Association("Acl").Clear()
 	db.Delete(&retAccount)
 	return u.Message(true, "Account successfully deleted")
 }
