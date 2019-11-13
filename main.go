@@ -31,6 +31,7 @@ func main() {
 
 	// Respond a basic success if anyone wants to get from / or /api to let them now the url is correct and server is up
 	router.HandleFunc("", u.RespondBasicSuccess).Methods("GET")
+	router.HandleFunc("/", u.RespondBasicSuccess).Methods("GET")
 	api.HandleFunc("", u.RespondBasicSuccess).Methods("GET")
 
 	//Connect Websocket
