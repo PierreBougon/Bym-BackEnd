@@ -17,9 +17,10 @@ func MiddlewareWrapper(h http.Handler) http.Handler {
 }
 
 func fetchMoesifOptions() map[string]interface{} {
-	appId := os.Getenv("moesif_app_id")
+	appId, exist := os.LookupEnv("moesif_app_id")
 
-	if appId == "" {
+	if !exist || appId == "" {
+		fmt.Println("Moesif middleware is not used. appid does not exist or is empty.")
 		return nil
 	}
 
