@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/PierreBougon/Bym-BackEnd/models"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
 
@@ -35,6 +36,8 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 				return
 			}
 		}
+
+		fmt.Println("Reaching auth")
 
 		tokenHeader := r.Header.Get("Authorization") //Grab the token from the header
 		//special case to try if auth header is contained into javascript websocket header
