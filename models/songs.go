@@ -4,12 +4,10 @@ import (
 	"fmt"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
 	"sort"
-
-	"github.com/jinzhu/gorm"
 )
 
 type Song struct {
-	gorm.Model
+	Model
 	Name       string `json:"name"`
 	PlaylistId uint   `json:"playlist_id"`
 	ExternalId string `json:"external_id"`
@@ -18,6 +16,11 @@ type Song struct {
 	Score      int    `json:"score"`
 	Status     string `json:"status"`
 	// We can add image + infos etc
+}
+
+type SongExtended struct {
+	Song
+	PersonalVote *bool `json:"personal_vote"`
 }
 
 // Not a model used to hold part of the song model
@@ -36,6 +39,7 @@ func (song *Song) Validate(user uint) (map[string]interface{}, bool) {
 		return u.Message(false, "Invalid playlist"), false
 	}
 	playlist := &Playlist{}
+	//Todo check if song already exists
 	err := db.First(playlist, song.PlaylistId).Error
 	if err != nil /*|| playlist.UserId != user */ {
 		return u.Message(false, "Invalid song, playlist may not be created"), false
@@ -52,6 +56,9 @@ func (song *Song) Create(user uint) map[string]interface{} {
 	if resp, ok := song.Validate(user); !ok {
 		return resp
 	}
+	if !checkRight(user, song.PlaylistId, ROLE_BYMER) {
+		return u.Message(false, "You do not have the right to add a song to this playlist.")
+	}
 
 	GetDB().Create(song)
 
@@ -64,10 +71,14 @@ func (song *Song) Create(user uint) map[string]interface{} {
 	return response
 }
 
-func GetSongs(playlist uint) []*Song {
-	songs := make([]*Song, 0)
-	err := GetDB().Table("songs").Where("playlist_id = ?", playlist).Order("score desc").Find(&songs).Error
-	fmt.Println(err)
+func GetSongs(playlist uint) []*SongExtended {
+	songs := make([]*SongExtended, 0)
+	err := GetDB().Table("songs").
+		Select("songs.*, Coalesce(votes.up_vote, votes.down_vote) as personal_vote").
+		Joins("LEFT JOIN votes ON votes.song_id = songs.id").
+		Where("playlist_id = ?", playlist).
+		Find(&songs).Error
+
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -108,7 +119,7 @@ func pushFrontPlayingSong(songs []*Song) []*Song {
 	return nil
 }
 
-func pushFrontPlayedSongs(songs []*Song) []*Song {
+func pushFrontPlayedSongs(songs []*SongExtended) []*SongExtended {
 	sort.Slice(songs, func(i, j int) bool {
 		status := []string{
 			"PLAYED",
@@ -146,6 +157,9 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]i
 		retSong.Name = newSong.Name
 	}
 	if newSong.Status != "" && isStatusValid(newSong.Status) {
+		if !checkRight(user, playlist.ID, ROLE_ADMIN) {
+			return u.Message(false, "User does not have the right to change th state of a song.")
+		}
 		if newSong.Status == "STOP" {
 			newSong.Status = "PLAYED"
 			retSong.Score = -1
@@ -169,7 +183,7 @@ func (song *Song) DeleteSong(user uint, songId uint) map[string]interface{} {
 	err := db.First(&retSong, songId).Error
 	playlist := &Playlist{}
 	db.First(playlist, retSong.PlaylistId)
-	if err != nil || playlist.UserId != user {
+	if err != nil || !checkRight(user, playlist.ID, ROLE_ADMIN) {
 		return u.Message(false, "Invalid song, you may not own this playlist")
 	}
 	db.Delete(&retSong)

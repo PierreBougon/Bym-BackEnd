@@ -21,6 +21,12 @@
 			"revisionTime": "2019-01-25T16:05:53Z"
 		},
 		{
+			"checksumSHA1": "kOV5boGCCq9HxBbm114Pl2zQ0mk=",
+			"path": "github.com/gorilla/websocket",
+			"revision": "c3e18be99d19e6b3e8f1559eea2c161a665c4b6b",
+			"revisionTime": "2019-08-25T01:20:11Z"
+		},
+		{
 			"checksumSHA1": "Ox5LkTafijv6NKp4hSHpQQJTS7k=",
 			"path": "github.com/hpcloud/tail",
 			"revision": "a1dbeea552b7c8df4b542c66073e393de198a800",

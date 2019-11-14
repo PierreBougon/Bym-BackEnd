@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/PierreBougon/Bym-BackEnd/app"
 	"github.com/PierreBougon/Bym-BackEnd/controllers"
-	"github.com/PierreBougon/Bym-BackEnd/moesif"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
 
 	"fmt"
@@ -28,16 +27,21 @@ func main() {
 
 	// API
 	api := router.PathPrefix("/api").Subrouter()
-	api.Use(moesif.MiddlewareWrapper)
+	//api.Use(moesif.MiddlewareWrapper)
 
 	// Respond a basic success if anyone wants to get from / or /api to let them now the url is correct and server is up
 	router.HandleFunc("", u.RespondBasicSuccess).Methods("GET")
+	router.HandleFunc("/", u.RespondBasicSuccess).Methods("GET")
 	api.HandleFunc("", u.RespondBasicSuccess).Methods("GET")
+
+	//Connect Websocket
+	api.HandleFunc("/ws", controllers.ConnectWebSocket).Methods("GET")
 
 	//		Auth / Account
 	auth := api.PathPrefix("/user").Subrouter()
 	auth.HandleFunc("/new", controllers.CreateAccount).Methods("POST")
 	auth.HandleFunc("/login", controllers.Authenticate).Methods("POST")
+	auth.HandleFunc("/delete", controllers.DeleteAccount).Methods("DELETE")
 	auth.HandleFunc("", controllers.UpdateAccount).Methods("PUT")
 	auth.HandleFunc("", controllers.GetAccount).Methods("GET")
 	auth.HandleFunc("/update_password", controllers.UpdatePassword).Methods("PATCH")
@@ -49,6 +53,9 @@ func main() {
 	playlist.HandleFunc("/{id}", controllers.GetPlaylist).Methods("GET")
 	playlist.HandleFunc("/{id}", controllers.UpdatePlaylist).Methods("PUT")
 	playlist.HandleFunc("/{id}", controllers.DeletePlaylist).Methods("DELETE")
+	playlist.HandleFunc("/join/{id}", controllers.JoinPlaylist).Methods("POST")
+	playlist.HandleFunc("/leave/{id}", controllers.LeavePlaylist).Methods("DELETE")
+	playlist.HandleFunc("/change_user_acl/{id}", controllers.ChangeAclOnPlaylist).Methods("POST")
 
 	//		Songs
 	song := api.PathPrefix("/song").Subrouter()
