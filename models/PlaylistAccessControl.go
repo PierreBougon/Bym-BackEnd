@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"fmt"
+	"strconv"
+	"time"
+)
 
 type PlaylistAccessControl struct {
 	CreatedAt 	time.Time
@@ -13,17 +17,21 @@ type PlaylistAccessControl struct {
 func checkRight(user uint, playlist uint, neededRole uint) bool {
 	acl := &PlaylistAccessControl{}
 	p := &Playlist{}
+	fmt.Println("Check right on playlist " + fmt.Sprintf("%d role needed is %d", playlist, neededRole))
 	db.Table("playlists").Where("id = ?", playlist).First(p)
 	if user == p.UserId {
+		fmt.Println("User is authorized to do the action because he is the author.")
 		return true
 	}
 
-	notFound := db.Table("playlist_access_control").Where(PlaylistAccessControl{
+	notFound := db.Table("playlist_access_controls").Where(PlaylistAccessControl{
 		UserId:     user,
 		PlaylistId: playlist,
 	}).First(acl).RecordNotFound()
-	if notFound || acl.RoleId > neededRole {
+	if notFound {
+		fmt.Println("User does not have any right on this playlist.")
 		return false
 	}
-	return true
+	fmt.Println("Current role on this playlist : " + string(acl.RoleId) + " Result : " +  strconv.FormatBool(acl.RoleId <= neededRole))
+	return acl.RoleId <= neededRole
 }

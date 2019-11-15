@@ -157,3 +157,22 @@ var ChangeAclOnPlaylist = func(w http.ResponseWriter, r *http.Request) {
 	}
 	u.Respond(w, resp)
 }
+
+var GetPlaylistRole = func(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.ParseUint(params["id"], 10, 32)
+	if err != nil {
+		u.RespondBadRequest(w)
+		return
+	}
+	user := r.Context().Value("user").(uint)
+	data, errMsg := models.GetRole(user, uint(id))
+	var resp map[string]interface{}
+	if errMsg != "" {
+		resp = u.Message(false, errMsg)
+	} else {
+		resp = u.Message(true, "success")
+	}
+	resp["role"] = data
+	u.Respond(w, resp)
+}

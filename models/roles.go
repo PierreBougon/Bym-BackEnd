@@ -11,5 +11,12 @@ type Role struct {
 const ROLE_ADMIN = 1
 const ROLE_BYMER = 2
 const ROLE_FOLLOWER  = 3
-// const ROLE_VISITOR  =
+const ROLE_VISITOR  = 4
 
+var RoleName = [5]string{
+	"Author",
+	"Admin",
+	"Bymer",
+	"Follower",
+	"Visitor",
+}
