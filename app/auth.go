@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/PierreBougon/Bym-BackEnd/models"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
 
@@ -36,8 +37,16 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 			}
 		}
 
+		fmt.Println("Reaching auth")
+
 		tokenHeader := r.Header.Get("Authorization") //Grab the token from the header
-		if tokenHeader == "" {                       //Token is missing, returns with error code 403 Unauthorized
+		//special case to try if auth header is contained into javascript websocket header
+		if tokenHeader == "" {
+			fmt.Println(r.Header.Get("Sec-WebSocket-Protocol"))
+			tokenHeader = r.Header.Get("Sec-WebSocket-Protocol") //Grab the token from the header
+			r.Header.Set("Sec-WebSocket-Protocol", "Protocol_BYM")
+		}
+		if tokenHeader == "" { //Token is missing, returns with error code 403 Unauthorized
 			sendErrorJson(w, "Missing auth token", http.StatusForbidden)
 			return
 		}

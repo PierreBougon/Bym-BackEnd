@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/PierreBougon/Bym-BackEnd/models"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
 
@@ -25,6 +26,7 @@ var CreatePlaylist = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var GetPlaylists = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("get playlists")
 	vals := r.URL.Query()          // Returns a url.Values, which is a map[string][]string
 	user_id, ok := vals["user_id"] // Note type, not ID. ID wasn't specified anywhere.
 
@@ -130,7 +132,6 @@ var JoinPlaylist = func(w http.ResponseWriter, r *http.Request) {
 	}
 	u.Respond(w, resp)
 }
-
 
 var ChangeAclOnPlaylist = func(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
