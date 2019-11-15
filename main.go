@@ -78,6 +78,7 @@ func main() {
 
 	//Launch the app, visit localhost:443/api
 	err := http.ListenAndServe(":"+port, router)
+
 	if err != nil {
 		fmt.Print(err)
 	}
