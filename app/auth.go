@@ -44,7 +44,10 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		if tokenHeader == "" {
 			fmt.Println(r.Header.Get("Sec-WebSocket-Protocol"))
 			tokenHeader = r.Header.Get("Sec-WebSocket-Protocol") //Grab the token from the header
-			r.Header.Set("Sec-WebSocket-Protocol", "Protocol_BYM")
+			if strings.Contains(tokenHeader, "bearer") && !strings.Contains(tokenHeader, " ") {
+				tokenHeader = tokenHeader[:6] + " " + tokenHeader[6:]
+			}
+			//r.Header.Set("Sec-WebSocket-Protocol", "Protocol_BYM")
 		}
 		if tokenHeader == "" { //Token is missing, returns with error code 403 Unauthorized
 			sendErrorJson(w, "Missing auth token", http.StatusForbidden)
