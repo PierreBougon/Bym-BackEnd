@@ -149,6 +149,9 @@ type PlaylistFilter struct {
 
 func GetPlaylistById(u uint, filter *PlaylistFilter) *Playlist {
 	retPlaylist := &Playlist{}
+	if filter == nil {
+		filter = &PlaylistFilter{}
+	}
 	req := GetDB()
 	if filter.ShowSongs {
 		req = req.Preload("Songs")
