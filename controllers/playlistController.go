@@ -49,6 +49,38 @@ var GetPlaylists = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var GetPlaylist = func(w http.ResponseWriter, r *http.Request) {
+	filter := models.PlaylistFilter{
+		ShowSongs: true,
+		ShowFollower: false,
+		ShowAcl: false,
+	}
+	getBoolVal := func(val []string, b *bool) bool {
+		if len(val) >= 1 {
+			ret, err := strconv.ParseBool(val[0])
+			if err == nil {
+				*b = ret
+				return true
+			}
+		}
+		return false
+	}
+	vals := r.URL.Query()
+	for name, val := range vals {
+		goodParam := false
+		switch name {
+		case "showSongs":
+			goodParam = getBoolVal(val, &filter.ShowSongs)
+		case "showFollower":
+			goodParam = getBoolVal(val, &filter.ShowFollower)
+		case "showAcl":
+			goodParam = getBoolVal(val, &filter.ShowAcl)
+		}
+		if !goodParam {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Invalid request, wrong value given to " + name))
+			return
+		}
+	}
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 
@@ -57,7 +89,7 @@ var GetPlaylist = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.GetPlaylistById(uint(id))
+	data := models.GetPlaylistById(uint(id), &filter)
 	if data == nil {
 		u.RespondBadRequest(w)
 		return

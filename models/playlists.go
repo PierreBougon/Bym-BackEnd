@@ -141,9 +141,28 @@ func (playlist *Playlist) LeavePlaylist(user uint, playlistId uint) map[string]i
 	return u.Message(true, "Playlist successfully left")
 }
 
-func GetPlaylistById(u uint) *Playlist {
+type PlaylistFilter struct {
+	ShowSongs    bool
+	ShowFollower bool
+	ShowAcl      bool
+}
+
+func GetPlaylistById(u uint, filter *PlaylistFilter) *Playlist {
 	retPlaylist := &Playlist{}
-	GetDB().Preload("Songs").Table("playlists").Where("id = ?", u).First(retPlaylist)
+	if filter == nil {
+		filter = &PlaylistFilter{}
+	}
+	req := GetDB()
+	if filter.ShowSongs {
+		req = req.Preload("Songs")
+	}
+	if filter.ShowFollower {
+		req = req.Preload("Follower")
+	}
+	if filter.ShowAcl {
+		req = req.Preload("Acl")
+	}
+	req.Table("playlists").Where("id = ?", u).First(retPlaylist)
 	if retPlaylist.Name == "" {
 		return nil
 	}

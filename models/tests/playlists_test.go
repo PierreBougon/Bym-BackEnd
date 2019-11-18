@@ -186,14 +186,14 @@ var _ = Describe("Playlists", func() {
 	Describe("Fetching a playlist", func() {
 		Context("With a wrong playlist ID", func() {
 			It("should return nothing", func() {
-				playlist := models.GetPlaylistById(0)
+				playlist := models.GetPlaylistById(0, nil)
 				Expect(playlist).To(BeNil())
 			})
 		})
 
 		Context("With a valid playlist ID", func() {
 			It("should return a playlist", func() {
-				playlist := models.GetPlaylistById(mockPlaylist.ID)
+				playlist := models.GetPlaylistById(mockPlaylist.ID, nil)
 				Expect(playlist).ToNot(BeNil())
 			})
 		})
