@@ -141,9 +141,28 @@ func (playlist *Playlist) LeavePlaylist(user uint, playlistId uint) map[string]i
 	return u.Message(true, "Playlist successfully left")
 }
 
-func GetPlaylistById(u uint) *Playlist {
+type PlaylistFilter struct {
+	ShowSongs    bool
+	ShowFollower bool
+	ShowAcl      bool
+}
+
+func GetPlaylistById(u uint, filter *PlaylistFilter) *Playlist {
 	retPlaylist := &Playlist{}
-	GetDB().Preload("Songs").Table("playlists").Where("id = ?", u).First(retPlaylist)
+	if filter == nil {
+		filter = &PlaylistFilter{}
+	}
+	req := GetDB()
+	if filter.ShowSongs {
+		req = req.Preload("Songs")
+	}
+	if filter.ShowFollower {
+		req = req.Preload("Follower")
+	}
+	if filter.ShowAcl {
+		req = req.Preload("Acl")
+	}
+	req.Table("playlists").Where("id = ?", u).First(retPlaylist)
 	if retPlaylist.Name == "" {
 		return nil
 	}
@@ -194,4 +213,25 @@ func (playlist *Playlist) DeletePlaylist(user uint, playlistId uint) map[string]
 	db.Model(retPlaylist).Association("Acl").Clear()
 	db.Delete(retPlaylist)
 	return u.Message(true, "Playlist successfully deleted")
+}
+
+func GetRole(user uint, playlistId uint) (*Role, string)  {
+	retPlaylist := &Playlist{}
+	err := GetDB().Table("playlists").Where("id = ?", playlistId).First(&retPlaylist).Error
+	if err != nil {
+		return nil, "Invalid playlist, it does not exist"
+	}
+	if retPlaylist.UserId == user {
+		return &Role{Name: RoleName[0], ID: 0}, ""
+	}
+
+	acl := &PlaylistAccessControl{};
+	notFound := db.Table("playlist_access_controls").Where(PlaylistAccessControl{
+		UserId:     user,
+		PlaylistId: playlistId,
+	}).First(acl).RecordNotFound()
+	if notFound {
+		return &Role{Name: RoleName[ROLE_VISITOR], ID: ROLE_VISITOR}, ""
+	}
+	return &Role{ID: acl.RoleId, Name: RoleName[acl.RoleId]}, ""
 }

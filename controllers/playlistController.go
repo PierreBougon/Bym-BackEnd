@@ -49,6 +49,38 @@ var GetPlaylists = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var GetPlaylist = func(w http.ResponseWriter, r *http.Request) {
+	filter := models.PlaylistFilter{
+		ShowSongs: true,
+		ShowFollower: false,
+		ShowAcl: false,
+	}
+	getBoolVal := func(val []string, b *bool) bool {
+		if len(val) >= 1 {
+			ret, err := strconv.ParseBool(val[0])
+			if err == nil {
+				*b = ret
+				return true
+			}
+		}
+		return false
+	}
+	vals := r.URL.Query()
+	for name, val := range vals {
+		goodParam := false
+		switch name {
+		case "showSongs":
+			goodParam = getBoolVal(val, &filter.ShowSongs)
+		case "showFollower":
+			goodParam = getBoolVal(val, &filter.ShowFollower)
+		case "showAcl":
+			goodParam = getBoolVal(val, &filter.ShowAcl)
+		}
+		if !goodParam {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Invalid request, wrong value given to " + name))
+			return
+		}
+	}
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 
@@ -57,7 +89,7 @@ var GetPlaylist = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.GetPlaylistById(uint(id))
+	data := models.GetPlaylistById(uint(id), &filter)
 	if data == nil {
 		u.RespondBadRequest(w)
 		return
@@ -156,5 +188,24 @@ var ChangeAclOnPlaylist = func(w http.ResponseWriter, r *http.Request) {
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
 	}
+	u.Respond(w, resp)
+}
+
+var GetPlaylistRole = func(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.ParseUint(params["id"], 10, 32)
+	if err != nil {
+		u.RespondBadRequest(w)
+		return
+	}
+	user := r.Context().Value("user").(uint)
+	data, errMsg := models.GetRole(user, uint(id))
+	var resp map[string]interface{}
+	if errMsg != "" {
+		resp = u.Message(false, errMsg)
+	} else {
+		resp = u.Message(true, "success")
+	}
+	resp["role"] = data
 	u.Respond(w, resp)
 }
