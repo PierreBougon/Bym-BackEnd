@@ -203,7 +203,7 @@ var _ = Describe("Playlists", func() {
 		Context("With a correct ID", func() {
 			It("should return a list", func() {
 				var s interface{} = models.GetPlaylistsByUser(mockAccount.ID)
-				playlists, ok := s.([]*models.Playlist)
+				playlists, ok := s.([]*models.PlaylistOwned)
 
 				Expect(ok).To(BeTrue())
 				Expect(playlists).ToNot(BeNil())
