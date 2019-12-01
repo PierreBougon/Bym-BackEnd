@@ -27,7 +27,7 @@ func fetchMoesifOptions() map[string]interface{} {
 	return map[string]interface{}{
 		"Application_Id":           appId,
 		"Log_Body":                 true,
-		"Capture_Outoing_Requests": true,
+		"Capture_Outoing_Requests": false,
 		"Identify_User": func(r *http.Request, recorder moesifmiddleware.MoesifResponseRecorder) string {
 			if user := r.Context().Value("user"); user != nil {
 				return fmt.Sprint(user)
