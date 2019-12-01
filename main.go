@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/PierreBougon/Bym-BackEnd/app"
 	"github.com/PierreBougon/Bym-BackEnd/controllers"
+	"github.com/PierreBougon/Bym-BackEnd/moesif"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
 
 	"fmt"
@@ -27,14 +28,14 @@ func main() {
 
 	// API
 	api := router.PathPrefix("/api").Subrouter()
-	//api.Use(moesif.MiddlewareWrapper)
+	api.Use(moesif.MiddlewareWrapper)
 
 	// Respond a basic success if anyone wants to get from / or /api to let them now the url is correct and server is up
 	router.HandleFunc("", u.RespondBasicSuccess).Methods("GET")
 	router.HandleFunc("/", u.RespondBasicSuccess).Methods("GET")
 	api.HandleFunc("", u.RespondBasicSuccess).Methods("GET")
 
-	//Connect Websocket
+	// Connect Websocket
 	api.HandleFunc("/ws", controllers.ConnectWebSocket).Methods("GET")
 
 	//		Auth / Account
