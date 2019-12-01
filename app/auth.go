@@ -37,8 +37,6 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 			}
 		}
 
-		fmt.Println("Reaching auth")
-
 		tokenHeader := r.Header.Get("Authorization") //Grab the token from the header
 		//special case to try if auth header is contained into javascript websocket header
 		if tokenHeader == "" {

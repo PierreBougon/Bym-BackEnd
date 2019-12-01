@@ -17,6 +17,11 @@ type Playlist struct {
 	Acl           []PlaylistAccessControl `gorm:"ForeignKey:PlaylistId"`
 }
 
+type PlaylistOwned struct {
+	Playlist
+	Owned 		bool `json:"owned"`
+}
+
 func (playlist *Playlist) Validate() (map[string]interface{}, bool) {
 	if len(playlist.Name) < 3 {
 		return u.Message(false, "Playlist name must be at least 3 characters long"), false
@@ -169,7 +174,18 @@ func GetPlaylistById(u uint, filter *PlaylistFilter) *Playlist {
 	return retPlaylist
 }
 
-func GetPlaylistsByUser(user uint) []*Playlist {
+func checkIfOwned(playlist []*Playlist, user uint) []*PlaylistOwned {
+	owned := make([]*PlaylistOwned, 0)
+	for k := 0; k < len(playlist); k++ {
+		owned = append(owned, &PlaylistOwned{
+			Playlist: *playlist[k],
+			Owned:    playlist[k].UserId == user,
+		})
+	}
+	return owned
+}
+
+func GetPlaylistsByUser(user uint) []*PlaylistOwned {
 
 	playlists := make([]*Playlist, 0)
 	err := GetDB().Table("playlists").Where("user_id = ?", user).Find(&playlists).Error
@@ -177,8 +193,16 @@ func GetPlaylistsByUser(user uint) []*Playlist {
 		fmt.Println(err)
 		return nil
 	}
+	User := &Account{}
+	GetDB().Table("accounts").Find(User, user)
+	joined := make([]*Playlist, 0)
+	err = GetDB().Model(User).Related(&joined, "FollowedPlaylists").Error
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
 
-	return playlists
+	return checkIfOwned(append(playlists, joined...), user)
 }
 
 func (playlist *Playlist) UpdatePlaylist(user uint, playlistId uint, newPlaylist *Playlist) map[string]interface{} {
