@@ -5,6 +5,7 @@ import (
 	"github.com/moesif/moesifmiddleware-go"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func MiddlewareWrapper(h http.Handler) http.Handler {
@@ -33,6 +34,9 @@ func fetchMoesifOptions() map[string]interface{} {
 				return fmt.Sprint(user)
 			}
 			return "unauthenticated"
+		},
+		"Should_Skip": func(request *http.Request, response moesifmiddleware.MoesifResponseRecorder) bool {
+			return strings.Contains(request.RequestURI, "/ws")
 		},
 	}
 }
