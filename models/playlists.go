@@ -19,7 +19,7 @@ type Playlist struct {
 
 type PlaylistOwned struct {
 	Playlist
-	Owned 		bool `json:"owned"`
+	Owned bool `json:"owned"`
 }
 
 func (playlist *Playlist) Validate() (map[string]interface{}, bool) {
@@ -60,14 +60,14 @@ func (playlist *Playlist) Join(user uint, playlistId uint) map[string]interface{
 		return u.Message(false, "This playlist does not exist")
 	}
 	if retPlaylist.UserId == user {
-		return u.Message(true, "Author does not need to follow his playlist")
+		return u.Message(false, "Author does not need to follow his playlist")
 	}
 
 	res := make([]*Account, 0)
 	GetDB().Model(retPlaylist).Association("Follower").Find(&res)
 	for _, follower := range res {
 		if follower.ID == user {
-			return u.Message(true, "User already joined the playlist")
+			return u.Message(false, "User already joined the playlist")
 		}
 	}
 
@@ -107,7 +107,7 @@ func ChangeAclOnPlaylist(user uint, userToPromote uint, playlistId uint, role ui
 		Where("user_id = ? AND playlist_id = ?", userToPromote, playlistId).Find(&oldAcl).
 		RecordNotFound()
 	if oldAcl.RoleId == role {
-		return u.Message(true, "This user already have this role")
+		return u.Message(false, "This user already have this role")
 	}
 	if oldAcl.RoleId == ROLE_ADMIN && role > ROLE_ADMIN && userAcl != 0 {
 		return u.Message(false, "To demote an Admin needs Author rights")
