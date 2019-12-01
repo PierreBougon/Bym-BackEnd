@@ -29,14 +29,24 @@ func (wsPool *WSPool) AddSocket(socket *WebSocket) {
 
 func (wsPool *WSPool) RemoveSocket(socket *WebSocket) {
 	i := 0
-	for ; socket != wsPool.sockArr[i]; i++ {
+	for ; i < len(wsPool.sockArr) && socket != wsPool.sockArr[i]; i++ {
+	}
+	if i >= len(wsPool.sockArr) {
+		return
+	}
+	if i+1 >= len(wsPool.sockArr) {
+		wsPool.sockArr = wsPool.sockArr[:i]
+		return
 	}
 	wsPool.sockArr = append(wsPool.sockArr[:i], wsPool.sockArr[i+1:]...)
 }
 
 func (wsPool *WSPool) GetSocket(client uint) *WebSocket {
 	i := 0
-	for ; client != wsPool.sockArr[i].clientId; i++ {
+	for ; i < len(wsPool.sockArr) && client != wsPool.sockArr[i].clientId; i++ {
+	}
+	if i >= len(wsPool.sockArr) {
+		return nil
 	}
 	return wsPool.sockArr[i]
 }
@@ -56,6 +66,8 @@ func (wsPool *WSPool) BroadcastMessage(authorId uint, playlistId uint, message s
 func (wsPool *WSPool) addMessageToQueue(authorId uint, subscriber uint, message string) {
 	if subscriber != authorId {
 		ws := wsPool.GetSocket(subscriber)
-		ws.send <- []byte(message)
+		if ws != nil {
+			ws.send <- []byte(message)
+		}
 	}
 }
