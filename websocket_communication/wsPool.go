@@ -1,6 +1,9 @@
 package websocket_communication
 
-import "sync"
+import (
+	"github.com/PierreBougon/Bym-BackEnd/models"
+	"sync"
+)
 
 var once sync.Once
 
@@ -36,4 +39,23 @@ func (wsPool *WSPool) GetSocket(client uint) *WebSocket {
 	for ; client != wsPool.sockArr[i].clientId; i++ {
 	}
 	return wsPool.sockArr[i]
+}
+
+func (wsPool *WSPool) BroadcastMessage(authorId uint, playlistId uint, message string) {
+	followers := models.GetFollowers(playlistId)
+	owner := models.GetPlaylistById(playlistId, nil).UserId
+
+	if owner != authorId {
+		wsPool.addMessageToQueue(authorId, owner, message)
+	}
+	for _, follower := range followers {
+		wsPool.addMessageToQueue(authorId, follower.AccountId, message)
+	}
+}
+
+func (wsPool *WSPool) addMessageToQueue(authorId uint, subscriber uint, message string) {
+	if subscriber != authorId {
+		ws := wsPool.GetSocket(subscriber)
+		ws.send <- []byte(message)
+	}
 }
