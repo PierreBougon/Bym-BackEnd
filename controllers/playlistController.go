@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/PierreBougon/Bym-BackEnd/models"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	"github.com/PierreBougon/Bym-BackEnd/websocket"
 
 	"encoding/json"
 	"github.com/gorilla/mux"
@@ -50,9 +51,9 @@ var GetPlaylists = func(w http.ResponseWriter, r *http.Request) {
 
 var GetPlaylist = func(w http.ResponseWriter, r *http.Request) {
 	filter := models.PlaylistFilter{
-		ShowSongs: true,
+		ShowSongs:    true,
 		ShowFollower: false,
-		ShowAcl: false,
+		ShowAcl:      false,
 	}
 	getBoolVal := func(val []string, b *bool) bool {
 		if len(val) >= 1 {
@@ -77,7 +78,7 @@ var GetPlaylist = func(w http.ResponseWriter, r *http.Request) {
 		}
 		if !goodParam {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message(false, "Invalid request, wrong value given to " + name))
+			u.Respond(w, u.Message(false, "Invalid request, wrong value given to "+name))
 			return
 		}
 	}
@@ -116,6 +117,8 @@ var UpdatePlaylist = func(w http.ResponseWriter, r *http.Request) {
 	resp := playlist.UpdatePlaylist(user, uint(id), playlist)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		websocket.NotifyPlaylistSubscribers(user, uint(id), websocket.PlaylistNeedRefresh(uint(id), user))
 	}
 	u.Respond(w, resp)
 }
@@ -131,6 +134,8 @@ var LeavePlaylist = func(w http.ResponseWriter, r *http.Request) {
 	resp := (&models.Playlist{}).LeavePlaylist(user, uint(id))
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		websocket.NotifyPlaylistSubscribers(user, uint(id), websocket.PlaylistNeedRefresh(uint(id), user))
 	}
 	u.Respond(w, resp)
 }
@@ -143,7 +148,8 @@ var DeletePlaylist = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := r.Context().Value("user").(uint)
-	resp := (&models.Playlist{}).DeletePlaylist(user, uint(id))
+	messageOnDelete := websocket.PlaylistDeleted(uint(id), user)
+	resp := (&models.Playlist{}).DeletePlaylist(user, uint(id), websocket.NotifyPlaylistSubscribers, messageOnDelete)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -161,6 +167,8 @@ var JoinPlaylist = func(w http.ResponseWriter, r *http.Request) {
 	resp := (&models.Playlist{}).Join(user, uint(id))
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		websocket.NotifyPlaylistSubscribers(user, uint(id), websocket.PlaylistNeedRefresh(uint(id), user))
 	}
 	u.Respond(w, resp)
 }
@@ -187,6 +195,8 @@ var ChangeAclOnPlaylist = func(w http.ResponseWriter, r *http.Request) {
 	resp := models.ChangeAclOnPlaylist(user, *userAcl.User, uint(id), *userAcl.Role)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		websocket.NotifyPlaylistSubscribers(user, uint(id), websocket.PlaylistNeedRefresh(uint(id), user))
 	}
 	u.Respond(w, resp)
 }
