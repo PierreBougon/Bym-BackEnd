@@ -1,4 +1,4 @@
-package websocket_communication
+package websocket
 
 import (
 	"github.com/PierreBougon/Bym-BackEnd/models"

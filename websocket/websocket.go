@@ -1,4 +1,4 @@
-package websocket_communication
+package websocket
 
 import (
 	"bytes"
