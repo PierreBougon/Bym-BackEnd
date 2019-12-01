@@ -203,19 +203,20 @@ func updatePlaylistSoundCount(user uint, playlistId uint, countModifier int) map
 	return u.Message(true, "Playlist successfully updated")
 }
 
-func (playlist *Playlist) DeletePlaylist(user uint, playlistId uint) map[string]interface{} {
+func (playlist *Playlist) DeletePlaylist(user uint, playlistId uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnDelete string) map[string]interface{} {
 	retPlaylist := &Playlist{}
 	err := db.Where(&Playlist{UserId: user}).First(&retPlaylist, playlistId).Error
 	if err != nil {
 		return u.Message(false, "Invalid playlist, you may not own this playlist")
 	}
+	notifyOnDelete(playlistId, user, messageOnDelete)
 	db.Model(retPlaylist).Association("Follower").Clear()
 	db.Model(retPlaylist).Association("Acl").Clear()
 	db.Delete(retPlaylist)
 	return u.Message(true, "Playlist successfully deleted")
 }
 
-func GetRole(user uint, playlistId uint) (*Role, string)  {
+func GetRole(user uint, playlistId uint) (*Role, string) {
 	retPlaylist := &Playlist{}
 	err := GetDB().Table("playlists").Where("id = ?", playlistId).First(&retPlaylist).Error
 	if err != nil {
@@ -225,7 +226,7 @@ func GetRole(user uint, playlistId uint) (*Role, string)  {
 		return &Role{Name: RoleName[0], ID: 0}, ""
 	}
 
-	acl := &PlaylistAccessControl{};
+	acl := &PlaylistAccessControl{}
 	notFound := db.Table("playlist_access_controls").Where(PlaylistAccessControl{
 		UserId:     user,
 		PlaylistId: playlistId,
