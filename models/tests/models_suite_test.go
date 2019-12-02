@@ -9,11 +9,11 @@ import (
 )
 
 var (
-	mockAccount	models.Account
+	mockAccount      models.Account
 	mockAccountVoter models.Account
-	mockPlaylist models.Playlist
-	mockSong models.Song
-	mockVote models.Vote
+	mockPlaylist     models.Playlist
+	mockSong         models.Song
+	mockVote         models.Vote
 )
 
 func TestModels(t *testing.T) {
@@ -46,8 +46,8 @@ func loadMockAccount(account *models.Account, email string) {
 		failedMockCreationPanic("account : " + err.Error())
 	} else {
 		createdAccount := &models.Account{
-			Email: email,
-			Password: string([]byte(mockAccountPassword)),
+			Email:        email,
+			Password:     string([]byte(mockAccountPassword)),
 			TokenVersion: 0,
 		}
 		createdAccount.Create()
@@ -80,15 +80,15 @@ func loadMockSong() {
 		failedMockCreationPanic("song : " + err.Error())
 	} else {
 		createdSong := models.Song{
-			Name: mockSongName,
+			Name:       mockSongName,
 			PlaylistId: mockPlaylist.ID,
 			ExternalId: "the id is a lie",
-			VoteDown: 42,
-			VoteUp: 43,
-			Score: 100,
-			Status: "None",
+			VoteDown:   42,
+			VoteUp:     43,
+			Score:      100,
+			Status:     "None",
 		}
-		createdSong.Create(mockAccount.ID)
+		createdSong.Create(mockAccount.ID, func(_ uint, __ uint, ___ string) {}, func(_ uint, __ uint) string { return "" })
 		models.GetDB().First(&mockSong, createdSong)
 	}
 }
@@ -104,10 +104,10 @@ func loadMockVote() {
 		failedMockCreationPanic("vote : " + err.Error())
 	} else {
 		createdVote := models.Vote{
-			UpVote: true,
+			UpVote:   true,
 			DownVote: false,
-			UserId: mockAccount.ID,
-			SongId: mockSong.ID,
+			UserId:   mockAccount.ID,
+			SongId:   mockSong.ID,
 		}
 		models.GetDB().Create(&createdVote)
 		models.GetDB().First(&mockVote, createdVote)
