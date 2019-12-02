@@ -1,4 +1,4 @@
-#Bym API
+# Bym API
 
 <p align="center"> 
 <img src="documentation/images/bym.png">
