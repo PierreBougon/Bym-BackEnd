@@ -2,6 +2,7 @@ package models_test
 
 import (
 	"github.com/PierreBougon/Bym-BackEnd/models"
+	"github.com/PierreBougon/Bym-BackEnd/websocket"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -62,12 +63,12 @@ var _ = Describe("Vote", func() {
 
 		Context("which does not exist", func() {
 			It("should fail with an upVote", func() {
-				res := models.UpVoteSong(0, mockAccount.ID)
+				res := models.UpVoteSong(0, mockAccount.ID, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 				Expect(res["status"]).To(BeFalse())
 			})
 
 			It("should fail with an downVote", func() {
-				res := models.DownVoteSong(0, mockAccount.ID)
+				res := models.DownVoteSong(0, mockAccount.ID, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 				Expect(res["status"]).To(BeFalse())
 			})
 		})
@@ -75,13 +76,13 @@ var _ = Describe("Vote", func() {
 		Context("which exist but already has a corresponding vote of the user on", func() {
 			It("should succeed with an upVote", func() {
 				switchMockVoteValueToCorrespondTo(mockVote, true)
-				res := models.UpVoteSong(mockSong.ID, mockAccount.ID)
+				res := models.UpVoteSong(mockSong.ID, mockAccount.ID, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 				Expect(res["status"]).To(BeTrue())
 			})
 
 			It("should succeed with an downVote", func() {
 				switchMockVoteValueToCorrespondTo(mockVote, false)
-				res := models.DownVoteSong(mockSong.ID, mockAccount.ID)
+				res := models.DownVoteSong(mockSong.ID, mockAccount.ID, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 				Expect(res["status"]).To(BeTrue())
 			})
 		})
@@ -114,7 +115,7 @@ var _ = Describe("Vote", func() {
 			})
 
 			It("should create a new Vote with an upVote", func() {
-				res := models.UpVoteSong(mockSong.ID, mockAccountVoter.ID)
+				res := models.UpVoteSong(mockSong.ID, mockAccountVoter.ID, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 				Expect(res["status"]).To(BeTrue())
 
 				found := fetchVote(&vote)
@@ -123,7 +124,7 @@ var _ = Describe("Vote", func() {
 			})
 
 			It("should create a new Vote with an downVote", func() {
-				res := models.DownVoteSong(mockSong.ID, mockAccountVoter.ID)
+				res := models.DownVoteSong(mockSong.ID, mockAccountVoter.ID, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 				Expect(res["status"]).To(BeTrue())
 
 				found := fetchVote(&vote)
