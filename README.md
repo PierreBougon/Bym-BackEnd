@@ -1,16 +1,18 @@
-# Bym API
-
 <p align="center"> 
 <img src="documentation/images/bym.png">
 </p>
 
+
+# Bym API
+
+
 Bym is an Epitech EIP project that aim to make the playlists sharable and collaborative 
+
+
 
 ## Project state
 
-**Master  :** [![Build Status](https://travis-ci.com/PierreBougon/Bym-BackEnd.svg?token=9ToS6xY1MC9b9a6bTDWE&branch=master)](https://travis-ci.com/PierreBougon/Bym-BackEnd)
-
-**Develop :** [![Build Status](https://travis-ci.com/PierreBougon/Bym-BackEnd.svg?token=9ToS6xY1MC9b9a6bTDWE&branch=develop)](https://travis-ci.com/PierreBougon/Bym-BackEnd)
+**Master  :** [![Build Status](https://travis-ci.com/PierreBougon/Bym-BackEnd.svg?token=9ToS6xY1MC9b9a6bTDWE&branch=master)](https://travis-ci.com/PierreBougon/Bym-BackEnd)  -  **Develop :** [![Build Status](https://travis-ci.com/PierreBougon/Bym-BackEnd.svg?token=9ToS6xY1MC9b9a6bTDWE&branch=develop)](https://travis-ci.com/PierreBougon/Bym-BackEnd)
 
 ## Getting Started
 
