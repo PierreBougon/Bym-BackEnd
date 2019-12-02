@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
-	"github.com/PierreBougon/Bym-BackEnd/websocket"
 )
 
 type Vote struct {
@@ -60,14 +59,14 @@ func updateVote(songid uint, user uint, upVote bool, notifyOnDelete func(playlis
 	vote.UpVote = upVote
 	vote.DownVote = !upVote
 	db.Save(&vote)
-	go RefreshSongVotes(user, songid, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
+	go RefreshSongVotes(user, songid, notifyOnDelete, messageOnUpdate)
 	return u.Message(true, "Song successfully up voted !")
 }
 
 func UpVoteSong(songid uint, user uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
-	return updateVote(songid, user, true, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
+	return updateVote(songid, user, true, notifyOnDelete, messageOnUpdate)
 }
 
 func DownVoteSong(songid uint, user uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
-	return updateVote(songid, user, false, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
+	return updateVote(songid, user, false, notifyOnDelete, messageOnUpdate)
 }
