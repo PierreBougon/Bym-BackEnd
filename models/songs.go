@@ -50,7 +50,7 @@ func (song *Song) Validate(user uint) (map[string]interface{}, bool) {
 	return u.Message(true, "Requirement passed"), true
 }
 
-func (song *Song) Create(user uint) map[string]interface{} {
+func (song *Song) Create(user uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 
 	song.Status = "NONE"
 	if resp, ok := song.Validate(user); !ok {
@@ -66,6 +66,7 @@ func (song *Song) Create(user uint) map[string]interface{} {
 		return u.Message(false, "Failed to create song, connection error.")
 	}
 	updatePlaylistSoundCount(user, song.PlaylistId, 1)
+	notifyOnDelete(song.PlaylistId, user, messageOnUpdate(song.PlaylistId, user))
 	response := u.Message(true, "song has been created")
 	response["song"] = song
 	return response
@@ -144,7 +145,7 @@ func pushFrontPlayedSongs(songs []*SongExtended) []*SongExtended {
 	return songs
 }
 
-func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]interface{} {
+func (song *Song) UpdateSong(user uint, songId uint, newSong *Song, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 	retSong := &Song{}
 	err := db.First(&retSong, songId).Error
 	playlist := &Playlist{}
@@ -168,6 +169,7 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]i
 		retSong.Status = newSong.Status
 	}
 	db.Save(&retSong)
+	notifyOnDelete(playlist.ID, user, messageOnUpdate(playlist.ID, user))
 	return u.Message(true, "Song successfully updated")
 }
 

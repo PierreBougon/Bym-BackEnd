@@ -20,11 +20,9 @@ var CreateSong = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := song.Create(user)
+	resp := song.Create(user, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
-	} else {
-		websocket.NotifyPlaylistSubscribers(user, song.PlaylistId, websocket.PlaylistNeedRefresh(song.PlaylistId, user))
 	}
 	u.Respond(w, resp)
 }
@@ -75,11 +73,9 @@ var UpdateSong = func(w http.ResponseWriter, r *http.Request) {
 		u.RespondBadRequest(w)
 		return
 	}
-	resp := song.UpdateSong(user, uint(id), song)
+	resp := song.UpdateSong(user, uint(id), song, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
-	} else {
-		websocket.NotifyPlaylistSubscribers(user, uint(id), websocket.PlaylistNeedRefresh(uint(id), user))
 	}
 	u.Respond(w, resp)
 }
@@ -95,8 +91,6 @@ var DeleteSong = func(w http.ResponseWriter, r *http.Request) {
 	resp := (&models.Song{}).DeleteSong(user, uint(id), websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
-	} else {
-		websocket.NotifyPlaylistSubscribers(user, uint(id), websocket.PlaylistNeedRefresh(uint(id), user))
 	}
 	u.Respond(w, resp)
 }
