@@ -47,7 +47,7 @@ func (song *Song) Validate(user uint) (map[string]interface{}, bool) {
 	if song.ExternalId == "" {
 		return u.Message(false, "Invalid external id"), false
 	}
-	return u.Message(false, "Requirement passed"), true
+	return u.Message(true, "Requirement passed"), true
 }
 
 func (song *Song) Create(user uint) map[string]interface{} {
@@ -178,16 +178,16 @@ func isStatusValid(status string) bool {
 	return false
 }
 
-func (song *Song) DeleteSong(user uint, songId uint) map[string]interface{} {
+func (song *Song) DeleteSong(user uint, songId uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 	retSong := &Song{}
 	err := db.First(&retSong, songId).Error
-	playlist := &Playlist{}
-	db.First(playlist, retSong.PlaylistId)
+	playlist := GetPlaylistFromSong(retSong)
 	if err != nil || !checkRight(user, playlist.ID, ROLE_ADMIN) {
 		return u.Message(false, "Invalid song, you may not own this playlist")
 	}
 	db.Delete(&retSong)
 	updatePlaylistSoundCount(user, song.PlaylistId, -1)
+	notifyOnDelete(playlist.ID, user, messageOnUpdate(playlist.ID, user))
 	return u.Message(true, "Song successfully deleted")
 }
 
