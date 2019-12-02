@@ -23,11 +23,11 @@ var _ = Describe("Playlists", func() {
 		}
 	)
 
-	BeforeEach(func () {
+	BeforeEach(func() {
 		invalidPlaylist = models.Playlist{
-			Name: "Mu",
+			Name:   "Mu",
 			UserId: 0,
-			Songs: make([]models.Song, 0),
+			Songs:  make([]models.Song, 0),
 		}
 	})
 
@@ -35,9 +35,9 @@ var _ = Describe("Playlists", func() {
 		Context("With an name shorter than 3 characters", func() {
 			It("should be invalid", func() {
 				AssertValidationBehavior(&models.Playlist{
-					Name: invalidPlaylist.Name,
+					Name:   invalidPlaylist.Name,
 					UserId: mockPlaylist.UserId,
-					Songs: mockPlaylist.Songs,
+					Songs:  mockPlaylist.Songs,
 				}, false)
 			})
 		})
@@ -45,9 +45,9 @@ var _ = Describe("Playlists", func() {
 		Context("With an userId lesser than 1", func() {
 			It("should be invalid", func() {
 				AssertValidationBehavior(&models.Playlist{
-					Name: mockPlaylist.Name,
+					Name:   mockPlaylist.Name,
 					UserId: invalidPlaylist.UserId,
-					Songs: mockPlaylist.Songs,
+					Songs:  mockPlaylist.Songs,
 				}, false)
 			})
 		})
@@ -103,7 +103,7 @@ var _ = Describe("Playlists", func() {
 
 		BeforeEach(func() {
 			playlistToDelete = models.Playlist{
-				Name: "ToDelete" + mockPlaylist.Name,
+				Name:   "ToDelete" + mockPlaylist.Name,
 				UserId: mockAccount.ID,
 			}
 			err := models.GetDB().Create(&playlistToDelete).Error
@@ -116,7 +116,7 @@ var _ = Describe("Playlists", func() {
 
 		Context("Which does not belong to the user", func() {
 			It("should fail with an error message", func() {
-				resp := mockPlaylist.DeletePlaylist(mockPlaylist.UserId + 1, playlistToDelete.ID)
+				resp := mockPlaylist.DeletePlaylist(mockPlaylist.UserId+1, playlistToDelete.ID, func(_ uint, __ uint, ___ string) {}, "")
 
 				Expect(resp["status"]).To(BeFalse(), "playlist was deleted without ownership")
 
@@ -126,7 +126,7 @@ var _ = Describe("Playlists", func() {
 
 		Context("Which belong to the user", func() {
 			It("should succeed", func() {
-				resp := mockPlaylist.DeletePlaylist(mockPlaylist.UserId, playlistToDelete.ID)
+				resp := mockPlaylist.DeletePlaylist(mockPlaylist.UserId, playlistToDelete.ID, func(_ uint, __ uint, ___ string) {}, "")
 
 				Expect(resp["status"]).To(BeTrue(), "playlist was not deleted")
 
@@ -159,7 +159,7 @@ var _ = Describe("Playlists", func() {
 
 		Context("Which does not belong to the user", func() {
 			It("should fail with an error message", func() {
-				resp := mockPlaylist.UpdatePlaylist(mockPlaylist.UserId + 1, mockPlaylist.ID, &newPlaylist)
+				resp := mockPlaylist.UpdatePlaylist(mockPlaylist.UserId+1, mockPlaylist.ID, &newPlaylist)
 
 				Expect(resp["status"]).To(BeFalse())
 			})

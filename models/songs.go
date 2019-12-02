@@ -47,10 +47,10 @@ func (song *Song) Validate(user uint) (map[string]interface{}, bool) {
 	if song.ExternalId == "" {
 		return u.Message(false, "Invalid external id"), false
 	}
-	return u.Message(false, "Requirement passed"), true
+	return u.Message(true, "Requirement passed"), true
 }
 
-func (song *Song) Create(user uint) map[string]interface{} {
+func (song *Song) Create(user uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 
 	song.Status = "NONE"
 	if resp, ok := song.Validate(user); !ok {
@@ -66,6 +66,7 @@ func (song *Song) Create(user uint) map[string]interface{} {
 		return u.Message(false, "Failed to create song, connection error.")
 	}
 	updatePlaylistSoundCount(user, song.PlaylistId, 1)
+	notifyOnDelete(song.PlaylistId, user, messageOnUpdate(song.PlaylistId, user))
 	response := u.Message(true, "song has been created")
 	response["song"] = song
 	return response
@@ -144,7 +145,7 @@ func pushFrontPlayedSongs(songs []*SongExtended) []*SongExtended {
 	return songs
 }
 
-func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]interface{} {
+func (song *Song) UpdateSong(user uint, songId uint, newSong *Song, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 	retSong := &Song{}
 	err := db.First(&retSong, songId).Error
 	playlist := &Playlist{}
@@ -168,6 +169,7 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song) map[string]i
 		retSong.Status = newSong.Status
 	}
 	db.Save(&retSong)
+	notifyOnDelete(playlist.ID, user, messageOnUpdate(playlist.ID, user))
 	return u.Message(true, "Song successfully updated")
 }
 
@@ -178,16 +180,16 @@ func isStatusValid(status string) bool {
 	return false
 }
 
-func (song *Song) DeleteSong(user uint, songId uint) map[string]interface{} {
+func (song *Song) DeleteSong(user uint, songId uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 	retSong := &Song{}
 	err := db.First(&retSong, songId).Error
-	playlist := &Playlist{}
-	db.First(playlist, retSong.PlaylistId)
+	playlist := GetPlaylistFromSong(retSong)
 	if err != nil || !checkRight(user, playlist.ID, ROLE_ADMIN) {
 		return u.Message(false, "Invalid song, you may not own this playlist")
 	}
 	db.Delete(&retSong)
 	updatePlaylistSoundCount(user, song.PlaylistId, -1)
+	notifyOnDelete(playlist.ID, user, messageOnUpdate(playlist.ID, user))
 	return u.Message(true, "Song successfully deleted")
 }
 
