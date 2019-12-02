@@ -50,7 +50,7 @@ func (song *Song) Validate(user uint) (map[string]interface{}, bool) {
 	return u.Message(true, "Requirement passed"), true
 }
 
-func (song *Song) Create(user uint, notifyOnUpdate func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
+func (song *Song) Create(user uint, notifyOnUpdate func(userId uint, playlistId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 
 	song.Status = "NONE"
 	if resp, ok := song.Validate(user); !ok {
@@ -66,7 +66,7 @@ func (song *Song) Create(user uint, notifyOnUpdate func(playlistId uint, userId 
 		return u.Message(false, "Failed to create song, connection error.")
 	}
 	updatePlaylistSoundCount(user, song.PlaylistId, 1)
-	notifyOnUpdate(song.PlaylistId, user, messageOnUpdate(song.PlaylistId, user))
+	notifyOnUpdate(user, song.PlaylistId, messageOnUpdate(song.PlaylistId, user))
 	response := u.Message(true, "song has been created")
 	response["song"] = song
 	return response
@@ -145,7 +145,7 @@ func pushFrontPlayedSongs(songs []*SongExtended) []*SongExtended {
 	return songs
 }
 
-func (song *Song) UpdateSong(user uint, songId uint, newSong *Song, notifyOnUpdate func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
+func (song *Song) UpdateSong(user uint, songId uint, newSong *Song, notifyOnUpdate func(userId uint, playlistId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 	retSong := &Song{}
 	err := db.First(&retSong, songId).Error
 	playlist := &Playlist{}
@@ -169,7 +169,7 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song, notifyOnUpda
 		retSong.Status = newSong.Status
 	}
 	db.Save(&retSong)
-	notifyOnUpdate(playlist.ID, user, messageOnUpdate(playlist.ID, user))
+	notifyOnUpdate(user, song.PlaylistId, messageOnUpdate(song.PlaylistId, user))
 	return u.Message(true, "Song successfully updated")
 }
 
@@ -180,7 +180,7 @@ func isStatusValid(status string) bool {
 	return false
 }
 
-func (song *Song) DeleteSong(user uint, songId uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
+func (song *Song) DeleteSong(user uint, songId uint, notifyOnDelete func(userId uint, playlistId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 	retSong := &Song{}
 	err := db.First(&retSong, songId).Error
 	playlist := GetPlaylistFromSong(retSong)
@@ -189,7 +189,7 @@ func (song *Song) DeleteSong(user uint, songId uint, notifyOnDelete func(playlis
 	}
 	db.Delete(&retSong)
 	updatePlaylistSoundCount(user, song.PlaylistId, -1)
-	notifyOnDelete(playlist.ID, user, messageOnUpdate(playlist.ID, user))
+	notifyOnDelete(user, playlist.ID, messageOnUpdate(playlist.ID, user))
 	return u.Message(true, "Song successfully deleted")
 }
 
@@ -236,7 +236,7 @@ func GetSongRankingById(songid uint) *Ranking {
 	return &rank
 }
 
-func RefreshSongVotes(userId uint, songid uint, notifyOnUpdate func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) {
+func RefreshSongVotes(userId uint, songid uint, notifyOnUpdate func(userId uint, playlistId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) {
 	//TODO : should now be threaded in a goroutine need a feedback to be sure it's fully working
 
 	// votes := make([]*Vote, 0)
@@ -256,5 +256,5 @@ func RefreshSongVotes(userId uint, songid uint, notifyOnUpdate func(playlistId u
 	song.VoteDown = downVotes
 	song.Score = upVotes*100 - downVotes*100
 	db.Save(&song)
-	notifyOnUpdate(song.PlaylistId, userId, messageOnUpdate(song.PlaylistId, userId))
+	notifyOnUpdate(userId, song.PlaylistId, messageOnUpdate(song.PlaylistId, userId))
 }
