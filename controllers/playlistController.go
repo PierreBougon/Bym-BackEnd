@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/PierreBougon/Bym-BackEnd/models"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	"github.com/PierreBougon/Bym-BackEnd/websocket"
 
 	"encoding/json"
 	"github.com/gorilla/mux"
@@ -25,6 +27,7 @@ var CreatePlaylist = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var GetPlaylists = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("get playlists")
 	vals := r.URL.Query()          // Returns a url.Values, which is a map[string][]string
 	user_id, ok := vals["user_id"] // Note type, not ID. ID wasn't specified anywhere.
 
@@ -47,6 +50,38 @@ var GetPlaylists = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var GetPlaylist = func(w http.ResponseWriter, r *http.Request) {
+	filter := models.PlaylistFilter{
+		ShowSongs:    true,
+		ShowFollower: false,
+		ShowAcl:      false,
+	}
+	getBoolVal := func(val []string, b *bool) bool {
+		if len(val) >= 1 {
+			ret, err := strconv.ParseBool(val[0])
+			if err == nil {
+				*b = ret
+				return true
+			}
+		}
+		return false
+	}
+	vals := r.URL.Query()
+	for name, val := range vals {
+		goodParam := false
+		switch name {
+		case "showSongs":
+			goodParam = getBoolVal(val, &filter.ShowSongs)
+		case "showFollower":
+			goodParam = getBoolVal(val, &filter.ShowFollower)
+		case "showAcl":
+			goodParam = getBoolVal(val, &filter.ShowAcl)
+		}
+		if !goodParam {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Invalid request, wrong value given to "+name))
+			return
+		}
+	}
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 
@@ -55,7 +90,7 @@ var GetPlaylist = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.GetPlaylistById(uint(id))
+	data := models.GetPlaylistById(uint(id), &filter)
 	if data == nil {
 		u.RespondBadRequest(w)
 		return
@@ -82,6 +117,8 @@ var UpdatePlaylist = func(w http.ResponseWriter, r *http.Request) {
 	resp := playlist.UpdatePlaylist(user, uint(id), playlist)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		websocket.NotifyPlaylistSubscribers(user, uint(id), websocket.PlaylistNeedRefresh(uint(id), user))
 	}
 	u.Respond(w, resp)
 }
@@ -97,6 +134,8 @@ var LeavePlaylist = func(w http.ResponseWriter, r *http.Request) {
 	resp := (&models.Playlist{}).LeavePlaylist(user, uint(id))
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		websocket.NotifyPlaylistSubscribers(user, uint(id), websocket.PlaylistNeedRefresh(uint(id), user))
 	}
 	u.Respond(w, resp)
 }
@@ -109,7 +148,8 @@ var DeletePlaylist = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := r.Context().Value("user").(uint)
-	resp := (&models.Playlist{}).DeletePlaylist(user, uint(id))
+	messageOnDelete := websocket.PlaylistDeleted(uint(id), user)
+	resp := (&models.Playlist{}).DeletePlaylist(user, uint(id), websocket.NotifyPlaylistSubscribers, messageOnDelete)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -127,10 +167,11 @@ var JoinPlaylist = func(w http.ResponseWriter, r *http.Request) {
 	resp := (&models.Playlist{}).Join(user, uint(id))
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		websocket.NotifyPlaylistSubscribers(user, uint(id), websocket.PlaylistNeedRefresh(uint(id), user))
 	}
 	u.Respond(w, resp)
 }
-
 
 var ChangeAclOnPlaylist = func(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -154,6 +195,27 @@ var ChangeAclOnPlaylist = func(w http.ResponseWriter, r *http.Request) {
 	resp := models.ChangeAclOnPlaylist(user, *userAcl.User, uint(id), *userAcl.Role)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		websocket.NotifyPlaylistSubscribers(user, uint(id), websocket.PlaylistNeedRefresh(uint(id), user))
 	}
+	u.Respond(w, resp)
+}
+
+var GetPlaylistRole = func(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.ParseUint(params["id"], 10, 32)
+	if err != nil {
+		u.RespondBadRequest(w)
+		return
+	}
+	user := r.Context().Value("user").(uint)
+	data, errMsg := models.GetRole(user, uint(id))
+	var resp map[string]interface{}
+	if errMsg != "" {
+		resp = u.Message(false, errMsg)
+	} else {
+		resp = u.Message(true, "success")
+	}
+	resp["role"] = data
 	u.Respond(w, resp)
 }

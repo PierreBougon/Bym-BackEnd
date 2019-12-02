@@ -17,6 +17,11 @@ type Playlist struct {
 	Acl           []PlaylistAccessControl `gorm:"ForeignKey:PlaylistId"`
 }
 
+type PlaylistOwned struct {
+	Playlist
+	Owned bool `json:"owned"`
+}
+
 func (playlist *Playlist) Validate() (map[string]interface{}, bool) {
 	if len(playlist.Name) < 3 {
 		return u.Message(false, "Playlist name must be at least 3 characters long"), false
@@ -55,14 +60,14 @@ func (playlist *Playlist) Join(user uint, playlistId uint) map[string]interface{
 		return u.Message(false, "This playlist does not exist")
 	}
 	if retPlaylist.UserId == user {
-		return u.Message(true, "Author does not need to follow his playlist")
+		return u.Message(false, "Author does not need to follow his playlist")
 	}
 
 	res := make([]*Account, 0)
 	GetDB().Model(retPlaylist).Association("Follower").Find(&res)
 	for _, follower := range res {
 		if follower.ID == user {
-			return u.Message(true, "User already joined the playlist")
+			return u.Message(false, "User already joined the playlist")
 		}
 	}
 
@@ -102,7 +107,7 @@ func ChangeAclOnPlaylist(user uint, userToPromote uint, playlistId uint, role ui
 		Where("user_id = ? AND playlist_id = ?", userToPromote, playlistId).Find(&oldAcl).
 		RecordNotFound()
 	if oldAcl.RoleId == role {
-		return u.Message(true, "This user already have this role")
+		return u.Message(false, "This user already have this role")
 	}
 	if oldAcl.RoleId == ROLE_ADMIN && role > ROLE_ADMIN && userAcl != 0 {
 		return u.Message(false, "To demote an Admin needs Author rights")
@@ -141,16 +146,46 @@ func (playlist *Playlist) LeavePlaylist(user uint, playlistId uint) map[string]i
 	return u.Message(true, "Playlist successfully left")
 }
 
-func GetPlaylistById(u uint) *Playlist {
+type PlaylistFilter struct {
+	ShowSongs    bool
+	ShowFollower bool
+	ShowAcl      bool
+}
+
+func GetPlaylistById(u uint, filter *PlaylistFilter) *Playlist {
 	retPlaylist := &Playlist{}
-	GetDB().Preload("Songs").Table("playlists").Where("id = ?", u).First(retPlaylist)
+	if filter == nil {
+		filter = &PlaylistFilter{}
+	}
+	req := GetDB()
+	if filter.ShowSongs {
+		req = req.Preload("Songs")
+	}
+	if filter.ShowFollower {
+		req = req.Preload("Follower")
+	}
+	if filter.ShowAcl {
+		req = req.Preload("Acl")
+	}
+	req.Table("playlists").Where("id = ?", u).First(retPlaylist)
 	if retPlaylist.Name == "" {
 		return nil
 	}
 	return retPlaylist
 }
 
-func GetPlaylistsByUser(user uint) []*Playlist {
+func checkIfOwned(playlist []*Playlist, user uint) []*PlaylistOwned {
+	owned := make([]*PlaylistOwned, 0)
+	for k := 0; k < len(playlist); k++ {
+		owned = append(owned, &PlaylistOwned{
+			Playlist: *playlist[k],
+			Owned:    playlist[k].UserId == user,
+		})
+	}
+	return owned
+}
+
+func GetPlaylistsByUser(user uint) []*PlaylistOwned {
 
 	playlists := make([]*Playlist, 0)
 	err := GetDB().Table("playlists").Where("user_id = ?", user).Find(&playlists).Error
@@ -158,8 +193,16 @@ func GetPlaylistsByUser(user uint) []*Playlist {
 		fmt.Println(err)
 		return nil
 	}
+	User := &Account{}
+	GetDB().Table("accounts").Find(User, user)
+	joined := make([]*Playlist, 0)
+	err = GetDB().Model(User).Related(&joined, "FollowedPlaylists").Error
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
 
-	return playlists
+	return checkIfOwned(append(playlists, joined...), user)
 }
 
 func (playlist *Playlist) UpdatePlaylist(user uint, playlistId uint, newPlaylist *Playlist) map[string]interface{} {
@@ -184,14 +227,42 @@ func updatePlaylistSoundCount(user uint, playlistId uint, countModifier int) map
 	return u.Message(true, "Playlist successfully updated")
 }
 
-func (playlist *Playlist) DeletePlaylist(user uint, playlistId uint) map[string]interface{} {
+func (playlist *Playlist) DeletePlaylist(user uint, playlistId uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnDelete string) map[string]interface{} {
 	retPlaylist := &Playlist{}
 	err := db.Where(&Playlist{UserId: user}).First(&retPlaylist, playlistId).Error
 	if err != nil {
 		return u.Message(false, "Invalid playlist, you may not own this playlist")
 	}
+	notifyOnDelete(playlistId, user, messageOnDelete)
 	db.Model(retPlaylist).Association("Follower").Clear()
 	db.Model(retPlaylist).Association("Acl").Clear()
 	db.Delete(retPlaylist)
 	return u.Message(true, "Playlist successfully deleted")
+}
+
+func GetRole(user uint, playlistId uint) (*Role, string) {
+	retPlaylist := &Playlist{}
+	err := GetDB().Table("playlists").Where("id = ?", playlistId).First(&retPlaylist).Error
+	if err != nil {
+		return nil, "Invalid playlist, it does not exist"
+	}
+	if retPlaylist.UserId == user {
+		return &Role{Name: RoleName[0], ID: 0}, ""
+	}
+
+	acl := &PlaylistAccessControl{}
+	notFound := db.Table("playlist_access_controls").Where(PlaylistAccessControl{
+		UserId:     user,
+		PlaylistId: playlistId,
+	}).First(acl).RecordNotFound()
+	if notFound {
+		return &Role{Name: RoleName[ROLE_VISITOR], ID: ROLE_VISITOR}, ""
+	}
+	return &Role{ID: acl.RoleId, Name: RoleName[acl.RoleId]}, ""
+}
+
+func GetPlaylistFromSong(song *Song) *Playlist {
+	playlist := &Playlist{}
+	db.First(playlist, song.PlaylistId)
+	return playlist
 }

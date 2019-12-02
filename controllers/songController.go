@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/PierreBougon/Bym-BackEnd/models"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	"github.com/PierreBougon/Bym-BackEnd/websocket"
 	"github.com/gorilla/mux"
 
 	"encoding/json"
@@ -19,7 +20,7 @@ var CreateSong = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := song.Create(user)
+	resp := song.Create(user, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -29,11 +30,11 @@ var CreateSong = func(w http.ResponseWriter, r *http.Request) {
 var GetSongs = func(w http.ResponseWriter, r *http.Request) {
 	var param string
 
-	vals := r.URL.Query()                  // Returns a url.Values, which is a map[string][]string
-	playlist_id, ok := vals["playlist_id"] // Note type, not ID. ID wasn't specified anywhere.
+	vals := r.URL.Query()                 // Returns a url.Values, which is a map[string][]string
+	playlistId, ok := vals["playlist_id"] // Note type, not ID. ID wasn't specified anywhere.
 
-	if ok && len(playlist_id) >= 1 {
-		param = playlist_id[0] // The first `?type=model`
+	if ok && len(playlistId) >= 1 {
+		param = playlistId[0] // The first `?type=model`
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Invalid request need playlist id"))
@@ -72,7 +73,7 @@ var UpdateSong = func(w http.ResponseWriter, r *http.Request) {
 		u.RespondBadRequest(w)
 		return
 	}
-	resp := song.UpdateSong(user, uint(id), song)
+	resp := song.UpdateSong(user, uint(id), song, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -87,7 +88,7 @@ var DeleteSong = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := r.Context().Value("user").(uint)
-	resp := (&models.Song{}).DeleteSong(user, uint(id))
+	resp := (&models.Song{}).DeleteSong(user, uint(id), websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
 	}

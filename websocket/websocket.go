@@ -1,7 +1,8 @@
-package websocket_communication
+package websocket
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
@@ -39,10 +40,14 @@ type WebSocket struct {
 }
 
 func (wsPool *WSPool) CreateWebSocket(w http.ResponseWriter, r *http.Request) *WebSocket {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		fmt.Println("Unable to upgrade connexion to websocket")
+		fmt.Println(err)
 		return nil
 	}
+	fmt.Println("Connexion successfully upgraded to websocket")
 	client := r.Context().Value("user").(uint)
 	ws := WebSocket{conn: conn, clientId: client, send: make(chan []byte, 256)}
 	go ws.readService()

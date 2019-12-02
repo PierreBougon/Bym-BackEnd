@@ -35,8 +35,8 @@ func main() {
 	router.HandleFunc("/", u.RespondBasicSuccess).Methods("GET")
 	api.HandleFunc("", u.RespondBasicSuccess).Methods("GET")
 
-	//Connect Websocket
-	api.HandleFunc("/ws", controllers.ConnectWebSocket).Methods("GET")
+	// Connect Websocket
+	router.HandleFunc("/ws", controllers.ConnectWebSocket).Methods("GET")
 
 	//		Auth / Account
 	auth := api.PathPrefix("/user").Subrouter()
@@ -57,6 +57,7 @@ func main() {
 	playlist.HandleFunc("/join/{id}", controllers.JoinPlaylist).Methods("POST")
 	playlist.HandleFunc("/leave/{id}", controllers.LeavePlaylist).Methods("DELETE")
 	playlist.HandleFunc("/change_user_acl/{id}", controllers.ChangeAclOnPlaylist).Methods("POST")
+	playlist.HandleFunc("/get_role/{id}", controllers.GetPlaylistRole).Methods("GET")
 
 	//		Songs
 	song := api.PathPrefix("/song").Subrouter()
@@ -78,6 +79,7 @@ func main() {
 
 	//Launch the app, visit localhost:443/api
 	err := http.ListenAndServe(":"+port, router)
+
 	if err != nil {
 		fmt.Print(err)
 	}

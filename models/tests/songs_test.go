@@ -27,9 +27,9 @@ var _ = Describe("Songs", func() {
 		}
 	)
 
-	BeforeEach(func () {
+	BeforeEach(func() {
 		invalidSong = models.Song{
-			Name: "",
+			Name:       "",
 			PlaylistId: 0,
 			ExternalId: "",
 		}
@@ -38,14 +38,14 @@ var _ = Describe("Songs", func() {
 	Describe("Validating Song data", func() {
 		Context("With correct data", func() {
 			It("should be valid", func() {
-				assertSongValidationBehavior(&mockSong, mockAccount.ID,true)
+				assertSongValidationBehavior(&mockSong, mockAccount.ID, true)
 			})
 		})
 
 		Context("With an empty name", func() {
 			It("should be invalid", func() {
 				assertSongValidationBehavior(&models.Song{
-					Name: invalidSong.Name,
+					Name:       invalidSong.Name,
 					PlaylistId: mockSong.PlaylistId,
 					ExternalId: mockSong.ExternalId,
 				}, mockAccount.ID, false)
@@ -55,7 +55,7 @@ var _ = Describe("Songs", func() {
 		Context("With a playlistId equal to 0", func() {
 			It("should be invalid", func() {
 				assertSongValidationBehavior(&models.Song{
-					Name: mockSong.Name,
+					Name:       mockSong.Name,
 					PlaylistId: invalidSong.PlaylistId,
 					ExternalId: mockSong.ExternalId,
 				}, mockAccount.ID, false)
@@ -66,17 +66,17 @@ var _ = Describe("Songs", func() {
 			It("should be invalid", func() {
 				// mockSong.Playlist should belong to mockAccount
 				assertSongValidationBehavior(&models.Song{
-					Name: mockSong.Name,
+					Name:       mockSong.Name,
 					PlaylistId: mockSong.PlaylistId,
 					ExternalId: mockSong.ExternalId,
-				}, mockAccount.ID + 1, false)
+				}, mockAccount.ID+1, false)
 			})
 		})
 
 		Context("With an empty externalId", func() {
 			It("should be invalid", func() {
 				assertSongValidationBehavior(&models.Song{
-					Name: mockSong.Name,
+					Name:       mockSong.Name,
 					PlaylistId: mockSong.PlaylistId,
 					ExternalId: invalidSong.ExternalId,
 				}, mockAccount.ID, false)
@@ -93,20 +93,20 @@ var _ = Describe("Songs", func() {
 		Context("With invalid data", func() {
 			It("should fail", func() {
 				song = invalidSong
-				resp := song.Create(mockAccount.ID)
+				resp := song.Create(mockAccount.ID, func(_ uint, __ uint, ___ string) {}, func(_ uint, __ uint) string { return "" })
 				Expect(resp["status"]).To(BeFalse(), resp["message"])
 			})
 		})
-		
+
 		Context("With valid data", func() {
 			It("should succeed and return the created song", func() {
 				song = models.Song{
-					Name: "New" + mockSong.Name,
+					Name:       "New" + mockSong.Name,
 					PlaylistId: mockSong.PlaylistId,
 					ExternalId: mockSong.ExternalId,
 				}
 
-				resp := song.Create(mockAccount.ID)
+				resp := song.Create(mockAccount.ID, func(_ uint, __ uint, ___ string) {}, func(_ uint, __ uint) string { return "" })
 				Expect(resp["status"]).To(BeTrue(), "%s %+v", resp["message"], song)
 
 				Expect(resp["song"]).NotTo(BeNil())
@@ -130,7 +130,7 @@ var _ = Describe("Songs", func() {
 
 		BeforeEach(func() {
 			songToDelete = models.Song{
-				Name: "ToDelete" + mockSong.Name,
+				Name:       "ToDelete" + mockSong.Name,
 				PlaylistId: mockPlaylist.ID,
 				ExternalId: "cameToBeDeleted",
 			}
@@ -144,7 +144,7 @@ var _ = Describe("Songs", func() {
 
 		XContext("Which does not belong to the user", func() {
 			It("should fail with an error message", func() {
-				resp := mockSong.DeleteSong(mockPlaylist.UserId + 1, songToDelete.ID)
+				resp := mockSong.DeleteSong(mockPlaylist.UserId+1, songToDelete.ID, func(_ uint, __ uint, ___ string) {}, func(_ uint, __ uint) string { return "" })
 
 				Expect(resp["status"]).To(BeFalse(), "song was deleted without ownership")
 
@@ -154,7 +154,7 @@ var _ = Describe("Songs", func() {
 
 		Context("Which belong to the user", func() {
 			It("should succeed", func() {
-				resp := mockSong.DeleteSong(mockPlaylist.UserId, songToDelete.ID)
+				resp := mockSong.DeleteSong(mockPlaylist.UserId, songToDelete.ID, func(_ uint, __ uint, ___ string) {}, func(_ uint, __ uint) string { return "" })
 
 				Expect(resp["status"]).To(BeTrue(), "song was not deleted")
 
@@ -187,7 +187,7 @@ var _ = Describe("Songs", func() {
 
 		XContext("Which does not belong to the user", func() {
 			It("should fail with an error message", func() {
-				resp := mockSong.UpdateSong(mockPlaylist.UserId + 1, mockSong.ID, &newSong)
+				resp := mockSong.UpdateSong(mockPlaylist.UserId+1, mockSong.ID, &newSong, func(_ uint, __ uint, ___ string) {}, func(_ uint, __ uint) string { return "" })
 
 				Expect(resp["status"]).To(BeFalse())
 			})
@@ -196,7 +196,7 @@ var _ = Describe("Songs", func() {
 
 		Context("Which belongs to the user", func() {
 			It("should successfully modify the Song name", func() {
-				resp := mockSong.UpdateSong(mockAccount.ID, mockSong.ID, &newSong)
+				resp := mockSong.UpdateSong(mockAccount.ID, mockSong.ID, &newSong, func(_ uint, __ uint, ___ string) {}, func(_ uint, __ uint) string { return "" })
 
 				Expect(resp["status"]).To(BeTrue())
 
