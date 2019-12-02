@@ -236,7 +236,7 @@ func GetSongRankingById(songid uint) *Ranking {
 	return &rank
 }
 
-func RefreshSongVotes(songid uint) {
+func RefreshSongVotes(userId uint, songid uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) {
 	//TODO : should now be threaded in a goroutine need a feedback to be sure it's fully working
 
 	// votes := make([]*Vote, 0)
@@ -256,4 +256,5 @@ func RefreshSongVotes(songid uint) {
 	song.VoteDown = downVotes
 	song.Score = upVotes*100 - downVotes*100
 	db.Save(&song)
+	notifyOnDelete(song.PlaylistId, userId, messageOnUpdate(song.PlaylistId, userId))
 }

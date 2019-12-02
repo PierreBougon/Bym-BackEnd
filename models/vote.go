@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	"github.com/PierreBougon/Bym-BackEnd/websocket"
 )
 
 type Vote struct {
@@ -32,7 +33,7 @@ func GetVotesBySongId(songid uint) []*Vote {
 	return votes
 }
 
-func updateVote(songid uint, user uint, upVote bool) map[string]interface{} {
+func updateVote(songid uint, user uint, upVote bool, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 	err := GetDB().Table("songs").Find(&Song{}, "id = ?", songid).Error
 	if err != nil {
 		return u.Message(false, "Request failed, connection error or songId does not exist")
@@ -59,14 +60,14 @@ func updateVote(songid uint, user uint, upVote bool) map[string]interface{} {
 	vote.UpVote = upVote
 	vote.DownVote = !upVote
 	db.Save(&vote)
-	go RefreshSongVotes(songid)
+	go RefreshSongVotes(user, songid, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 	return u.Message(true, "Song successfully up voted !")
 }
 
-func UpVoteSong(songid uint, user uint) map[string]interface{} {
-	return updateVote(songid, user, true)
+func UpVoteSong(songid uint, user uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
+	return updateVote(songid, user, true, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 }
 
-func DownVoteSong(songid uint, user uint) map[string]interface{} {
-	return updateVote(songid, user, false)
+func DownVoteSong(songid uint, user uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
+	return updateVote(songid, user, false, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 }
