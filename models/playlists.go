@@ -260,3 +260,9 @@ func GetRole(user uint, playlistId uint) (*Role, string) {
 	}
 	return &Role{ID: acl.RoleId, Name: RoleName[acl.RoleId]}, ""
 }
+
+func GetPlaylistFromSong(song *Song) *Playlist {
+	playlist := &Playlist{}
+	db.First(playlist, song.PlaylistId)
+	return playlist
+}
