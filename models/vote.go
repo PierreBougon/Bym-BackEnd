@@ -32,7 +32,7 @@ func GetVotesBySongId(songid uint) []*Vote {
 	return votes
 }
 
-func updateVote(songid uint, user uint, upVote bool) map[string]interface{} {
+func updateVote(songid uint, user uint, upVote bool, notifyOnUpdate func(userId uint, playlistId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 	err := GetDB().Table("songs").Find(&Song{}, "id = ?", songid).Error
 	if err != nil {
 		return u.Message(false, "Request failed, connection error or songId does not exist")
@@ -59,14 +59,14 @@ func updateVote(songid uint, user uint, upVote bool) map[string]interface{} {
 	vote.UpVote = upVote
 	vote.DownVote = !upVote
 	db.Save(&vote)
-	go RefreshSongVotes(songid)
+	go RefreshSongVotes(user, songid, notifyOnUpdate, messageOnUpdate)
 	return u.Message(true, "Song successfully up voted !")
 }
 
-func UpVoteSong(songid uint, user uint) map[string]interface{} {
-	return updateVote(songid, user, true)
+func UpVoteSong(songid uint, user uint, notifyOnUpdate func(userId uint, playlistId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
+	return updateVote(songid, user, true, notifyOnUpdate, messageOnUpdate)
 }
 
-func DownVoteSong(songid uint, user uint) map[string]interface{} {
-	return updateVote(songid, user, false)
+func DownVoteSong(songid uint, user uint, notifyOnUpdate func(userId uint, playlistId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
+	return updateVote(songid, user, false, notifyOnUpdate, messageOnUpdate)
 }

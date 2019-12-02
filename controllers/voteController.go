@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/PierreBougon/Bym-BackEnd/models"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	"github.com/PierreBougon/Bym-BackEnd/websocket"
 	"github.com/gorilla/mux"
 	"net"
 	"net/http"
@@ -60,9 +61,9 @@ var UpdateOrCreateVote = func(w http.ResponseWriter, r *http.Request) {
 
 	resp := u.Message(true, "This request has performed no action")
 	if vote.UpVote == true {
-		resp = models.UpVoteSong(uint(songId), user)
+		resp = models.UpVoteSong(uint(songId), user, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 	} else if vote.DownVote == true {
-		resp = models.DownVoteSong(uint(songId), user)
+		resp = models.DownVoteSong(uint(songId), user, websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 	}
 	u.Respond(w, resp)
 }
