@@ -32,7 +32,7 @@ func GetVotesBySongId(songid uint) []*Vote {
 	return votes
 }
 
-func updateVote(songid uint, user uint, upVote bool, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
+func updateVote(songid uint, user uint, upVote bool, notifyOnUpdate func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 	err := GetDB().Table("songs").Find(&Song{}, "id = ?", songid).Error
 	if err != nil {
 		return u.Message(false, "Request failed, connection error or songId does not exist")
@@ -59,14 +59,14 @@ func updateVote(songid uint, user uint, upVote bool, notifyOnDelete func(playlis
 	vote.UpVote = upVote
 	vote.DownVote = !upVote
 	db.Save(&vote)
-	go RefreshSongVotes(user, songid, notifyOnDelete, messageOnUpdate)
+	go RefreshSongVotes(user, songid, notifyOnUpdate, messageOnUpdate)
 	return u.Message(true, "Song successfully up voted !")
 }
 
-func UpVoteSong(songid uint, user uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
-	return updateVote(songid, user, true, notifyOnDelete, messageOnUpdate)
+func UpVoteSong(songid uint, user uint, notifyOnUpdate func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
+	return updateVote(songid, user, true, notifyOnUpdate, messageOnUpdate)
 }
 
-func DownVoteSong(songid uint, user uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
-	return updateVote(songid, user, false, notifyOnDelete, messageOnUpdate)
+func DownVoteSong(songid uint, user uint, notifyOnUpdate func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
+	return updateVote(songid, user, false, notifyOnUpdate, messageOnUpdate)
 }
