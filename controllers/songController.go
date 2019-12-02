@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/PierreBougon/Bym-BackEnd/models"
 	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	"github.com/PierreBougon/Bym-BackEnd/websocket"
 	"github.com/gorilla/mux"
 
 	"encoding/json"
@@ -22,6 +23,8 @@ var CreateSong = func(w http.ResponseWriter, r *http.Request) {
 	resp := song.Create(user)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		websocket.NotifyPlaylistSubscribers(user, song.PlaylistId, websocket.PlaylistNeedRefresh(song.PlaylistId, user))
 	}
 	u.Respond(w, resp)
 }
@@ -75,6 +78,8 @@ var UpdateSong = func(w http.ResponseWriter, r *http.Request) {
 	resp := song.UpdateSong(user, uint(id), song)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		websocket.NotifyPlaylistSubscribers(user, uint(id), websocket.PlaylistNeedRefresh(uint(id), user))
 	}
 	u.Respond(w, resp)
 }
@@ -87,9 +92,11 @@ var DeleteSong = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user := r.Context().Value("user").(uint)
-	resp := (&models.Song{}).DeleteSong(user, uint(id))
+	resp := (&models.Song{}).DeleteSong(user, uint(id), websocket.NotifyPlaylistSubscribers, websocket.PlaylistNeedRefresh)
 	if resp["status"] == false {
 		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		websocket.NotifyPlaylistSubscribers(user, uint(id), websocket.PlaylistNeedRefresh(uint(id), user))
 	}
 	u.Respond(w, resp)
 }
