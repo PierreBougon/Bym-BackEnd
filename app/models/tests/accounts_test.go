@@ -1,7 +1,7 @@
 package models_test
 
 import (
-	"github.com/PierreBougon/Bym-BackEnd/models"
+	"github.com/PierreBougon/Bym-BackEnd/app/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -24,7 +24,7 @@ var _ = Describe("Accounts", func() {
 
 	BeforeEach(func() {
 		invalidAccount = models.Account{
-			Email: "notAnEmail.fr",
+			Email:    "notAnEmail.fr",
 			Password: "hi",
 		}
 	})
@@ -33,7 +33,7 @@ var _ = Describe("Accounts", func() {
 		Context("With a wrong email", func() {
 			It("should be invalid", func() {
 				AssertValidationBehavior(&models.Account{
-					Email: invalidAccount.Email,
+					Email:    invalidAccount.Email,
 					Password: mockAccount.Password,
 				}, false)
 			})
@@ -42,7 +42,7 @@ var _ = Describe("Accounts", func() {
 		Context("With an already used email", func() {
 			It("should be invalid", func() {
 				AssertValidationBehavior(&models.Account{
-					Email: mockAccount.Email,
+					Email:    mockAccount.Email,
 					Password: mockAccount.Password,
 				}, false)
 			})
@@ -51,7 +51,7 @@ var _ = Describe("Accounts", func() {
 		Context("With a password having less than 6 character", func() {
 			It("should be invalid", func() {
 				AssertValidationBehavior(&models.Account{
-					Email: mockAccount.Email,
+					Email:    mockAccount.Email,
 					Password: invalidAccount.Password,
 				}, false)
 			})
@@ -60,7 +60,7 @@ var _ = Describe("Accounts", func() {
 		Context("With correct data", func() {
 			It("should be valid", func() {
 				AssertValidationBehavior(&models.Account{
-					Email: "NotDuplicate" + mockAccount.Email,
+					Email:    "NotDuplicate" + mockAccount.Email,
 					Password: mockAccount.Password,
 				}, true)
 			})
@@ -82,7 +82,7 @@ var _ = Describe("Accounts", func() {
 		Context("With valid data", func() {
 			It("should succeed and return the created account", func() {
 				account = models.Account{
-					Email: "New" + mockAccount.Email,
+					Email:    "New" + mockAccount.Email,
 					Password: "123456",
 				}
 
@@ -117,7 +117,6 @@ var _ = Describe("Accounts", func() {
 		Context("With the right credentials", func() {
 			It("should return the Account you logged into and assign it a token", func() {
 				resp := models.Login(mockAccount.Email, mockAccount.Password)
-
 
 				Expect(resp["status"]).To(BeTrue(), resp["message"])
 				Expect(resp["token"]).ToNot(BeNil())

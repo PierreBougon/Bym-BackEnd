@@ -1,7 +1,7 @@
 package models_test
 
 import (
-	"github.com/PierreBougon/Bym-BackEnd/models"
+	"github.com/PierreBougon/Bym-BackEnd/app/models"
 	"testing"
 
 	. "github.com/onsi/ginkgo"

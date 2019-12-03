@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/PierreBougon/Bym-BackEnd/app"
-	"github.com/PierreBougon/Bym-BackEnd/controllers"
-	"github.com/PierreBougon/Bym-BackEnd/moesif"
-	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	auth2 "github.com/PierreBougon/Bym-BackEnd/app/auth"
+	"github.com/PierreBougon/Bym-BackEnd/app/controllers"
+	"github.com/PierreBougon/Bym-BackEnd/app/moesif"
+	u "github.com/PierreBougon/Bym-BackEnd/app/utils"
 
 	"fmt"
 	"net/http"
@@ -16,7 +16,7 @@ import (
 func main() {
 
 	router := mux.NewRouter()
-	router.Use(app.JwtAuthentication) //attach JWT auth middleware
+	router.Use(auth2.JwtAuthentication) //attach JWT auth middleware
 
 	// Get port from .env file, we did not specify any port so this should return an empty string when tested locally
 	port := os.Getenv("PORT")

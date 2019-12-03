@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"encoding/json"
-	"github.com/PierreBougon/Bym-BackEnd/models"
-	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	"github.com/PierreBougon/Bym-BackEnd/app/models"
+	u "github.com/PierreBougon/Bym-BackEnd/app/utils"
 	"net/http"
 )
 

@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/PierreBougon/Bym-BackEnd/models"
-	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	"github.com/PierreBougon/Bym-BackEnd/app/models"
+	u "github.com/PierreBougon/Bym-BackEnd/app/utils"
 	"github.com/PierreBougon/Bym-BackEnd/websocket"
 
 	"encoding/json"

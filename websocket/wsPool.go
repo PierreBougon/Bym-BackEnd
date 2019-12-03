@@ -1,7 +1,7 @@
 package websocket
 
 import (
-	"github.com/PierreBougon/Bym-BackEnd/models"
+	"github.com/PierreBougon/Bym-BackEnd/app/models"
 	"sync"
 )
 

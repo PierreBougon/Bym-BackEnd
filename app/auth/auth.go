@@ -1,9 +1,9 @@
-package app
+package auth
 
 import (
 	"fmt"
-	"github.com/PierreBougon/Bym-BackEnd/models"
-	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	"github.com/PierreBougon/Bym-BackEnd/app/models"
+	u "github.com/PierreBougon/Bym-BackEnd/app/utils"
 
 	"context"
 	"net/http"
