@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/PierreBougon/Bym-BackEnd/websocket"
+	"github.com/PierreBougon/Bym-BackEnd/app/websocket"
 	"net/http"
 )
 

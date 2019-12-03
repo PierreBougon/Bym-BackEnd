@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/PierreBougon/Bym-BackEnd/app/models"
 	u "github.com/PierreBougon/Bym-BackEnd/app/utils"
-	"github.com/PierreBougon/Bym-BackEnd/websocket"
+	"github.com/PierreBougon/Bym-BackEnd/app/websocket"
 	"github.com/gorilla/mux"
 	"net"
 	"net/http"
