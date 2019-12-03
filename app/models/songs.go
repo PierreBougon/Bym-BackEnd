@@ -169,7 +169,7 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song, notifyOnUpda
 		retSong.Status = newSong.Status
 	}
 	db.Save(&retSong)
-	notifyOnUpdate(user, song.PlaylistId, messageOnUpdate(song.PlaylistId, user))
+	notifyOnUpdate(user, retSong.PlaylistId, messageOnUpdate(retSong.PlaylistId, user))
 	return u.Message(true, "Song successfully updated")
 }
 
