@@ -78,7 +78,9 @@ func GetSongs(playlist uint) []*SongExtended {
 		Select("songs.*, Coalesce(votes.up_vote, votes.down_vote) as personal_vote").
 		Joins("LEFT JOIN votes ON votes.song_id = songs.id").
 		Where("playlist_id = ?", playlist).
-		Find(&songs).Error
+		Group("songs.id, votes.up_vote, votes.down_vote").
+		Find(&songs).
+		Error
 
 	if err != nil {
 		fmt.Println(err)
