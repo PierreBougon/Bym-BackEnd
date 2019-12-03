@@ -1,7 +1,7 @@
 package models
 
 import (
-	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	u "github.com/PierreBougon/Bym-BackEnd/app/utils"
 
 	"os"
 	"strings"
@@ -23,13 +23,13 @@ type Token struct {
 //a struct to rep user account
 type Account struct {
 	Model
-	Email        string     `json:"email",gorm:"type:text;unique;not null"`
-	Password     string     `json:"password"`
-	TokenVersion uint       `json:"token_version"`
-	Picture      string     `json:"picture"`
-	Playlists    []Playlist `gorm:"ForeignKey:UserId"`
-	FollowedPlaylists []*Playlist `gorm:"many2many:account_playlist"`
-	Acl			 []PlaylistAccessControl `gorm:"ForeignKey:UserId"`
+	Email             string                  `json:"email",gorm:"type:text;unique;not null"`
+	Password          string                  `json:"password"`
+	TokenVersion      uint                    `json:"token_version"`
+	Picture           string                  `json:"picture"`
+	Playlists         []Playlist              `gorm:"ForeignKey:UserId"`
+	FollowedPlaylists []*Playlist             `gorm:"many2many:account_playlist"`
+	Acl               []PlaylistAccessControl `gorm:"ForeignKey:UserId"`
 }
 
 func (account *Account) ValidatePassword() (map[string]interface{}, bool) {

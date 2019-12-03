@@ -1,8 +1,8 @@
 package models_test
 
 import (
-	"github.com/PierreBougon/Bym-BackEnd/models"
-	"github.com/PierreBougon/Bym-BackEnd/websocket"
+	"github.com/PierreBougon/Bym-BackEnd/app/models"
+	"github.com/PierreBougon/Bym-BackEnd/app/websocket"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

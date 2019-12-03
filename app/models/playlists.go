@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	u "github.com/PierreBougon/Bym-BackEnd/app/utils"
 	"github.com/jinzhu/gorm"
 )
 
