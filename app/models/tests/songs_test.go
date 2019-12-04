@@ -213,7 +213,7 @@ var _ = Describe("Songs", func() {
 	Describe("Fetching all songs from a playlist", func() {
 		Context("With a playlist ID", func() {
 			It("should return a list", func() {
-				var s interface{} = models.GetSongs(mockPlaylist.ID)
+				var s interface{} = models.GetSongs(mockPlaylist.ID, 1)
 				songs, ok := s.([]*models.SongExtended)
 
 				Expect(ok).To(BeTrue())

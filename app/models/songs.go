@@ -72,20 +72,37 @@ func (song *Song) Create(user uint, notifyOnUpdate func(userId uint, playlistId 
 	return response
 }
 
-func GetSongs(playlist uint) []*SongExtended {
+func GetSongs(playlist uint, userId uint) []*SongExtended {
 	songs := make([]*SongExtended, 0)
 	err := GetDB().Table("songs").
-		Select("songs.*, Coalesce(votes.up_vote, votes.down_vote) as personal_vote").
-		Joins("LEFT JOIN votes ON votes.song_id = songs.id").
+		Select("songs.*").
+		//Joins("LEFT JOIN votes ON votes.song_id = songs.id").
 		Where("playlist_id = ?", playlist).
-		Group("songs.id, votes.up_vote, votes.down_vote").
+		Order("songs.score DESC").
 		Find(&songs).
 		Error
 
+		//
 	if err != nil {
 		fmt.Println(err)
 		return nil
 	}
+
+	// TODO : Strongly unoptimized process we need to check a new process to retrieve personal votes
+	// Maybe add playlist_id in votes to be able to get all the votes from a playlist ?
+	// Or find a way to inject this logic directly in a single sql request (care not to produce duplicates)
+	vote := &Vote{}
+	for _, song := range songs {
+		vote = GetPersonalVoteBySongId(song.ID, userId)
+		if vote != nil && vote.UpVote == true {
+			song.PersonalVote = &vote.UpVote
+		} else if vote != nil && vote.DownVote == true {
+			song.PersonalVote = &vote.DownVote
+		} else {
+			song.PersonalVote = nil
+		}
+	}
+
 	//songs = pushFrontPlayingSong(songs)
 	songs = pushFrontPlayedSongs(songs)
 	return songs

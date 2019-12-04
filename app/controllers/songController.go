@@ -30,6 +30,7 @@ var CreateSong = func(w http.ResponseWriter, r *http.Request) {
 var GetSongs = func(w http.ResponseWriter, r *http.Request) {
 	var param string
 
+	user := r.Context().Value("user").(uint)
 	vals := r.URL.Query()                 // Returns a url.Values, which is a map[string][]string
 	playlistId, ok := vals["playlist_id"] // Note type, not ID. ID wasn't specified anywhere.
 
@@ -49,7 +50,7 @@ var GetSongs = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := models.GetSongs(uint(plistid))
+	data := models.GetSongs(uint(plistid), user)
 	if data == nil {
 		u.RespondBadRequestWithMessage(w, "Invalid request, playlist Id doesn't match with any playlist")
 		return
