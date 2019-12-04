@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	u "github.com/PierreBougon/Bym-BackEnd/app/utils"
 	"sort"
 )
 
@@ -50,7 +50,7 @@ func (song *Song) Validate(user uint) (map[string]interface{}, bool) {
 	return u.Message(true, "Requirement passed"), true
 }
 
-func (song *Song) Create(user uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
+func (song *Song) Create(user uint, notifyOnUpdate func(userId uint, playlistId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 
 	song.Status = "NONE"
 	if resp, ok := song.Validate(user); !ok {
@@ -66,24 +66,43 @@ func (song *Song) Create(user uint, notifyOnDelete func(playlistId uint, userId 
 		return u.Message(false, "Failed to create song, connection error.")
 	}
 	updatePlaylistSoundCount(user, song.PlaylistId, 1)
-	notifyOnDelete(song.PlaylistId, user, messageOnUpdate(song.PlaylistId, user))
+	notifyOnUpdate(user, song.PlaylistId, messageOnUpdate(song.PlaylistId, user))
 	response := u.Message(true, "song has been created")
 	response["song"] = song
 	return response
 }
 
-func GetSongs(playlist uint) []*SongExtended {
+func GetSongs(playlist uint, userId uint) []*SongExtended {
 	songs := make([]*SongExtended, 0)
 	err := GetDB().Table("songs").
-		Select("songs.*, Coalesce(votes.up_vote, votes.down_vote) as personal_vote").
-		Joins("LEFT JOIN votes ON votes.song_id = songs.id").
+		Select("songs.*").
+		//Joins("LEFT JOIN votes ON votes.song_id = songs.id").
 		Where("playlist_id = ?", playlist).
-		Find(&songs).Error
+		Order("songs.score DESC").
+		Find(&songs).
+		Error
 
+		//
 	if err != nil {
 		fmt.Println(err)
 		return nil
 	}
+
+	// TODO : Strongly unoptimized process we need to check a new process to retrieve personal votes
+	// Maybe add playlist_id in votes to be able to get all the votes from a playlist ?
+	// Or find a way to inject this logic directly in a single sql request (care not to produce duplicates)
+	vote := &Vote{}
+	for _, song := range songs {
+		vote = GetPersonalVoteBySongId(song.ID, userId)
+		if vote != nil && vote.UpVote == true {
+			song.PersonalVote = &vote.UpVote
+		} else if vote != nil && vote.DownVote == true {
+			song.PersonalVote = &vote.DownVote
+		} else {
+			song.PersonalVote = nil
+		}
+	}
+
 	//songs = pushFrontPlayingSong(songs)
 	songs = pushFrontPlayedSongs(songs)
 	return songs
@@ -145,7 +164,7 @@ func pushFrontPlayedSongs(songs []*SongExtended) []*SongExtended {
 	return songs
 }
 
-func (song *Song) UpdateSong(user uint, songId uint, newSong *Song, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
+func (song *Song) UpdateSong(user uint, songId uint, newSong *Song, notifyOnUpdate func(userId uint, playlistId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 	retSong := &Song{}
 	err := db.First(&retSong, songId).Error
 	playlist := &Playlist{}
@@ -169,7 +188,7 @@ func (song *Song) UpdateSong(user uint, songId uint, newSong *Song, notifyOnDele
 		retSong.Status = newSong.Status
 	}
 	db.Save(&retSong)
-	notifyOnDelete(playlist.ID, user, messageOnUpdate(playlist.ID, user))
+	notifyOnUpdate(user, retSong.PlaylistId, messageOnUpdate(retSong.PlaylistId, user))
 	return u.Message(true, "Song successfully updated")
 }
 
@@ -180,7 +199,7 @@ func isStatusValid(status string) bool {
 	return false
 }
 
-func (song *Song) DeleteSong(user uint, songId uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
+func (song *Song) DeleteSong(user uint, songId uint, notifyOnDelete func(userId uint, playlistId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) map[string]interface{} {
 	retSong := &Song{}
 	err := db.First(&retSong, songId).Error
 	playlist := GetPlaylistFromSong(retSong)
@@ -189,7 +208,7 @@ func (song *Song) DeleteSong(user uint, songId uint, notifyOnDelete func(playlis
 	}
 	db.Delete(&retSong)
 	updatePlaylistSoundCount(user, song.PlaylistId, -1)
-	notifyOnDelete(playlist.ID, user, messageOnUpdate(playlist.ID, user))
+	notifyOnDelete(user, playlist.ID, messageOnUpdate(playlist.ID, user))
 	return u.Message(true, "Song successfully deleted")
 }
 
@@ -236,7 +255,7 @@ func GetSongRankingById(songid uint) *Ranking {
 	return &rank
 }
 
-func RefreshSongVotes(songid uint) {
+func RefreshSongVotes(userId uint, songid uint, notifyOnUpdate func(userId uint, playlistId uint, message string), messageOnUpdate func(playlistId uint, userId uint) string) {
 	//TODO : should now be threaded in a goroutine need a feedback to be sure it's fully working
 
 	// votes := make([]*Vote, 0)
@@ -256,4 +275,5 @@ func RefreshSongVotes(songid uint) {
 	song.VoteDown = downVotes
 	song.Score = upVotes*100 - downVotes*100
 	db.Save(&song)
+	notifyOnUpdate(userId, song.PlaylistId, messageOnUpdate(song.PlaylistId, userId))
 }

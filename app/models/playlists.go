@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	u "github.com/PierreBougon/Bym-BackEnd/utils"
+	u "github.com/PierreBougon/Bym-BackEnd/app/utils"
 	"github.com/jinzhu/gorm"
 )
 
@@ -227,13 +227,13 @@ func updatePlaylistSoundCount(user uint, playlistId uint, countModifier int) map
 	return u.Message(true, "Playlist successfully updated")
 }
 
-func (playlist *Playlist) DeletePlaylist(user uint, playlistId uint, notifyOnDelete func(playlistId uint, userId uint, message string), messageOnDelete string) map[string]interface{} {
+func (playlist *Playlist) DeletePlaylist(user uint, playlistId uint, notifyOnDelete func(userId uint, playlistId uint, message string), messageOnDelete string) map[string]interface{} {
 	retPlaylist := &Playlist{}
 	err := db.Where(&Playlist{UserId: user}).First(&retPlaylist, playlistId).Error
 	if err != nil {
 		return u.Message(false, "Invalid playlist, you may not own this playlist")
 	}
-	notifyOnDelete(playlistId, user, messageOnDelete)
+	notifyOnDelete(user, playlistId, messageOnDelete)
 	db.Model(retPlaylist).Association("Follower").Clear()
 	db.Model(retPlaylist).Association("Acl").Clear()
 	db.Delete(retPlaylist)

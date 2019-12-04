@@ -1,7 +1,7 @@
 package websocket
 
 import (
-	"github.com/PierreBougon/Bym-BackEnd/models"
+	"github.com/PierreBougon/Bym-BackEnd/app/models"
 	"sync"
 )
 
@@ -56,18 +56,16 @@ func (wsPool *WSPool) BroadcastMessage(authorId uint, playlistId uint, message s
 	owner := models.GetPlaylistById(playlistId, nil).UserId
 
 	if owner != authorId {
-		wsPool.addMessageToQueue(authorId, owner, message)
+		wsPool.addMessageToQueue(owner, message)
 	}
 	for _, follower := range followers {
-		wsPool.addMessageToQueue(authorId, follower.AccountId, message)
+		wsPool.addMessageToQueue(follower.AccountId, message)
 	}
 }
 
-func (wsPool *WSPool) addMessageToQueue(authorId uint, subscriber uint, message string) {
-	if subscriber != authorId {
-		ws := wsPool.GetSocket(subscriber)
-		if ws != nil {
-			ws.send <- []byte(message)
-		}
+func (wsPool *WSPool) addMessageToQueue(subscriber uint, message string) {
+	ws := wsPool.GetSocket(subscriber)
+	if ws != nil {
+		ws.send <- []byte(message)
 	}
 }

@@ -1,10 +1,9 @@
 package models_test
 
 import (
+	"github.com/PierreBougon/Bym-BackEnd/app/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"github.com/PierreBougon/Bym-BackEnd/models"
 )
 
 var _ = Describe("Playlists", func() {
