@@ -55,9 +55,7 @@ func (wsPool *WSPool) BroadcastMessage(authorId uint, playlistId uint, message s
 	followers := models.GetFollowers(playlistId)
 	owner := models.GetPlaylistById(playlistId, nil).UserId
 
-	if owner != authorId {
-		wsPool.addMessageToQueue(owner, message)
-	}
+	wsPool.addMessageToQueue(owner, message)
 	for _, follower := range followers {
 		wsPool.addMessageToQueue(follower.AccountId, message)
 	}
