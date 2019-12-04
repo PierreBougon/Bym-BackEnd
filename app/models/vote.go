@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	u "github.com/PierreBougon/Bym-BackEnd/app/utils"
 )
 
@@ -17,7 +16,7 @@ func GetPersonalVoteBySongId(songid uint, user uint) *Vote {
 	vote := Vote{}
 	err := GetDB().Table("votes").Where("song_id = ? AND user_id = ?", songid, user).Find(&vote).Error
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
 		return nil
 	}
 	return &vote
