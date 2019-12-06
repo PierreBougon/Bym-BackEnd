@@ -14,3 +14,11 @@ func GetFollowers(playlistId uint) []*AccountPlaylist {
 
 	return accPlay
 }
+
+func CleanFollowersPersonalData(followers []*Account) {
+	for _, follower := range followers {
+		follower.TokenVersion = 0
+		follower.Email = ""
+		follower.Password = ""
+	}
+}

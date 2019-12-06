@@ -171,6 +171,10 @@ func GetPlaylistById(u uint, filter *PlaylistFilter) *Playlist {
 	if retPlaylist.Name == "" {
 		return nil
 	}
+	if retPlaylist.Follower != nil {
+		//Todo change playlist definition to hold only partial information of accounts
+		CleanFollowersPersonalData(retPlaylist.Follower)
+	}
 	return retPlaylist
 }
 
