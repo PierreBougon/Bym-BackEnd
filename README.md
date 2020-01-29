@@ -1,5 +1,5 @@
 <p align="center"> 
-<img src="documentation/images/bym.png">
+<img src="documentation/images/bym.png" width="250" height="250">
 </p>
 
 
