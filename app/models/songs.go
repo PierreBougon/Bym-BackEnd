@@ -91,12 +91,11 @@ func GetSongs(playlist uint, userId uint) []*SongExtended {
 	// TODO : Strongly unoptimized process we need to check a new process to retrieve personal votes
 	// Maybe add playlist_id in votes to be able to get all the votes from a playlist ?
 	// Or find a way to inject this logic directly in a single sql request (care not to produce duplicates)
-	vote := &Vote{}
 	for _, song := range songs {
-		vote = GetPersonalVoteBySongId(song.ID, userId)
-		if vote != nil && vote.UpVote == true {
+		vote := GetPersonalVoteBySongId(song.ID, userId)
+		if vote != nil && vote.UpVote {
 			song.PersonalVote = &vote.UpVote
-		} else if vote != nil && vote.DownVote == true {
+		} else if vote != nil && vote.DownVote {
 			song.PersonalVote = &vote.DownVote
 		} else {
 			song.PersonalVote = nil

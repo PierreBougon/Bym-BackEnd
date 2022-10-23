@@ -60,8 +60,9 @@ func loadMockPlaylist() {
 	mockPlaylist.Name = "MockTest"
 	mockPlaylist.UserId = mockAccount.ID
 	err := models.GetDB().
-		Table("playlists").
-		FirstOrCreate(&mockPlaylist).Error
+				Table("playlists").
+				Where("user_id = ?", mockAccount.ID).
+				FirstOrCreate(&mockPlaylist).Error
 
 	if err != nil {
 		failedMockCreationPanic("playlist : " + err.Error())

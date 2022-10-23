@@ -9,8 +9,8 @@ import (
 type PlaylistAccessControl struct {
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
-	UserId     uint `gorm:"unique_index:idx_user_playlist",json:"user_id"`
-	PlaylistId uint `gorm:"unique_index:idx_user_playlist",json:"playlist_id"`
+	UserId     uint `gorm:"unique_index:idx_user_playlist" json:"user_id"`
+	PlaylistId uint `gorm:"unique_index:idx_user_playlist" json:"playlist_id"`
 	RoleId     uint `json:"role_id"`
 }
 
@@ -32,6 +32,6 @@ func checkRight(user uint, playlist uint, neededRole uint) bool {
 		fmt.Println("User does not have any right on this playlist.")
 		return false
 	}
-	fmt.Println("Current role on this playlist : " + string(acl.RoleId) + " Result : " + strconv.FormatBool(acl.RoleId <= neededRole))
+	fmt.Println("Current role on this playlist : " + fmt.Sprint(acl.RoleId) + " Result : " + strconv.FormatBool(acl.RoleId <= neededRole))
 	return acl.RoleId <= neededRole
 }

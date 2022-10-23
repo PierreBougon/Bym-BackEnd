@@ -6,8 +6,10 @@ import (
 )
 
 var once sync.Once
-
+// Serves as a pool of opened sockets
+// Use the dedicated functions to manage the sockets inside the pool
 type WSPool struct {
+	// The atual registered sockets
 	sockArr []*WebSocket
 }
 

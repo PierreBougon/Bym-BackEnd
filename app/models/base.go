@@ -13,14 +13,15 @@ import (
 var db *gorm.DB //database
 
 func loadDotEnv() {
-	cwd, e := os.Getwd()
+	cwd, err := os.Getwd()
+
 	envPath := "./.env"
 	if strings.HasSuffix(cwd, "tests") {
-		envPath = "../../.env"
+		envPath = "../../../.env"
 	}
-	e = godotenv.Load(envPath)
-	if e != nil {
-		fmt.Print(e)
+	err = godotenv.Load(envPath)
+	if err != nil {
+		fmt.Print(err)
 	}
 }
 
@@ -74,7 +75,8 @@ func getDbInfoFromEnv() (dbDialect string, dbUri string) {
 }
 
 func init() {
-	conn, err := gorm.Open(getDbInfoFromEnv())
+	dbDialect, dbCnx := getDbInfoFromEnv()
+	conn, err := gorm.Open(dbDialect, dbCnx)
 	if err != nil {
 		fmt.Print(err)
 		panic("failed to connect to database")
