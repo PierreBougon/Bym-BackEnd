@@ -49,7 +49,12 @@ func (wsPool *WSPool) CreateWebSocket(w http.ResponseWriter, r *http.Request) *W
 	}
 	fmt.Println("Connexion successfully upgraded to websocket")
 	client := r.Context().Value("user").(uint)
-	ws := WebSocket{conn: conn, clientId: client, send: make(chan []byte, 256)}
+	ws := WebSocket {
+			conn: conn,
+			clientId: client,
+			send: make(chan []byte, 256),
+		}
+
 	go ws.readService()
 	go ws.writeService()
 	wsPool.AddSocket(&ws)
@@ -61,9 +66,11 @@ func (ws *WebSocket) readService() {
 		GetWSPool().RemoveSocket(ws)
 		ws.conn.Close()
 	}()
+
 	ws.conn.SetReadLimit(maxMessageSize)
 	ws.conn.SetReadDeadline(time.Now().Add(pongWait))
 	ws.conn.SetPongHandler(func(string) error { ws.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	
 	for {
 		_, message, err := ws.conn.ReadMessage()
 		if err != nil {
@@ -85,10 +92,12 @@ func (ws *WebSocket) writeService() {
 		ticker.Stop()
 		ws.conn.Close()
 	}()
+
 	for {
 		select {
 		case message, ok := <-ws.send:
 			ws.conn.SetWriteDeadline(time.Now().Add(writeWait))
+
 			if !ok {
 				// The hub closed the channel.
 				ws.conn.WriteMessage(websocket.CloseMessage, []byte{})
@@ -99,6 +108,7 @@ func (ws *WebSocket) writeService() {
 			if err != nil {
 				return
 			}
+
 			w.Write(message)
 
 			// Add queued chat messages to the current websocket message.
@@ -111,6 +121,7 @@ func (ws *WebSocket) writeService() {
 			if err := w.Close(); err != nil {
 				return
 			}
+			
 		case <-ticker.C:
 			ws.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := ws.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
