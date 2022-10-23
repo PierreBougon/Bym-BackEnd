@@ -61,7 +61,7 @@ Please feel free to open a Pull Request if you think you have a good piece of co
 
 ## Authors
 
-* **Pierre Bougon** - *Owner developer*
+* **Pierre Bougon** - *Lead developer*
 * **Mathis Guilbon** - *Developer*
 
 See also the list of [contributors](https://github.com/PierreBougon/Bym-BackEnd/contributors) who participated in this project.
